@@ -480,3 +480,17 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Datos efímeros, resultados y configuración privada
+**/App_Data/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+artifacts/
+playwright-report/
+test-results/

@@ -1,46 +1,52 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Convalidacion.Web</title>
-    <script type="importmap"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Demo académica del proceso de convalidación de asignaturas FIA–EPICS." />
+    <title>@ViewData["Title"] · Convalidaciones FIA–EPICS</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Convalidacion.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Convalidacion.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    <a class="visually-hidden-focusable skip-link" href="#contenido">Saltar al contenido</a>
+    <div class="demo-banner">DEMO ACADÉMICA <span>Gestión de Procesos · USMP · Datos ficticios</span></div>
+    <header class="border-bottom bg-white">
+        <nav class="navbar navbar-expand-lg container py-3" aria-label="Navegación principal">
+            <a class="navbar-brand d-flex align-items-center gap-3" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark" aria-hidden="true">U</span>
+                <span><strong>Convalidaciones</strong><small>FIA · EPICS / USMP</small></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacion" aria-controls="navegacion" aria-expanded="false" aria-label="Abrir menú"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navegacion">
+                <div class="navbar-nav ms-auto me-lg-4 gap-lg-3">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">Panel general</a>
+                    <a class="nav-link" asp-controller="Solicitudes" asp-action="Index">Solicitudes</a>
+                    <a class="nav-link" asp-controller="Home" asp-action="Privacy">Acerca de la demo</a>
                 </div>
+                <form asp-controller="Perfiles" asp-action="Cambiar" method="post" class="profile-form">
+                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                    <label for="perfil" class="small text-secondary">Perfil simulado</label>
+                    <div class="d-flex gap-2">
+                        <select id="perfil" name="perfil" class="form-select form-select-sm">
+                            @foreach (var perfil in Enum.GetValues<PerfilDemo>())
+                            { <option value="@perfil" selected="@(perfil == Perfiles.Actual)">@perfil.Texto()</option> }
+                        </select>
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Cambiar</button>
+                    </div>
+                </form>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Convalidacion.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
+    <main class="container py-4 py-lg-5" id="contenido">
+        @if (TempData["Mensaje"] is string mensaje)
+        { <div class="alert alert-success" role="status">@mensaje</div> }
+        @RenderBody()
+    </main>
+    <footer class="container py-4 border-top d-flex flex-wrap justify-content-between gap-2 text-secondary small">
+        <span>USMP · Facultad de Ingeniería y Arquitectura · EPICS</span>
+        <span>Prototipo universitario · Sin validez administrativa</span>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

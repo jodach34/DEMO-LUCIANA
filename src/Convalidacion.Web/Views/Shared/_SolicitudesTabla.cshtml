@@ -1,0 +1,16 @@
+﻿@model IReadOnlyList<Solicitud>
+@if (Model.Count == 0)
+{
+    <div class="empty-state"><h3>No hay solicitudes para mostrar</h3><p>Registra una solicitud ficticia o cambia los filtros de búsqueda.</p></div>
+}
+else
+{
+    <div class="table-responsive"><table class="table align-middle">
+        <caption class="visually-hidden">Solicitudes de convalidación de la demo</caption>
+        <thead><tr><th scope="col">Expediente</th><th scope="col">Estudiante ficticio</th><th scope="col">Asignatura de destino</th><th scope="col">Estado</th><th scope="col"><span class="visually-hidden">Acción</span></th></tr></thead>
+        <tbody>@foreach (var item in Model)
+        {
+            <tr><td><strong>@item.Codigo</strong><small class="d-block text-secondary">@item.CreadaUtc.ToString("dd/MM/yyyy") · UTC</small></td><td>@item.Estudiante</td><td>@item.Asignatura.Nombre</td><td><span class="status status-@item.Estado">@item.Estado.Texto()</span></td><td><a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@item.Id" aria-label="Ver solicitud @item.Codigo">Ver detalle →</a></td></tr>
+        }</tbody>
+    </table></div>
+}

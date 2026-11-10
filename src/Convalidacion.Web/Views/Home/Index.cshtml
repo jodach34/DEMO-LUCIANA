@@ -1,8 +1,30 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+﻿@model DashboardViewModel
+@{ ViewData["Title"] = "Panel general"; }
+<section class="hero mb-4">
+    <div>
+        <p class="eyebrow">GESTIÓN ACADÉMICA / CONVALIDACIONES</p>
+        <h1>Un proceso claro.<br />Cada solicitud, en seguimiento.</h1>
+        <p class="hero-description">Del registro a la evaluación académica: centraliza la información, identifica observaciones y consulta cada cambio en un solo lugar.</p>
+        <a class="btn btn-primary me-2" asp-controller="Solicitudes" asp-action="Crear">+ Nueva solicitud</a>
+        <a class="btn btn-outline-secondary" asp-controller="Solicitudes" asp-action="Index">Ver solicitudes</a>
+    </div>
+    <div class="hero-note"><span class="eyebrow">PROYECTO UNIVERSITARIO</span><strong>FIA–EPICS</strong><p>Mejora del proceso de convalidación de asignaturas</p><span class="small">Registro · Revisión · Decisión · Trazabilidad</span></div>
+</section>
+<section class="row g-3 mb-5" aria-label="Indicadores actuales de solicitudes">
+    @foreach (var indicador in new[] { ("Solicitudes registradas", Model.Total, "Todas las solicitudes de la demo"), ("Por atender", Model.Pendientes, "Recibidas y en revisión"), ("Con observaciones", Model.Observadas, "Pendientes de subsanación"), ("Aprobadas", Model.Aprobadas, "Evaluación final favorable") })
+    {
+        <div class="col-6 col-lg-3"><article class="metric"><span>@indicador.Item1</span><strong>@indicador.Item2.ToString("D2")</strong><small>@indicador.Item3</small></article></div>
+    }
+</section>
+<section class="mb-5">
+    <div class="section-heading"><div><p class="eyebrow">RUTA DEL PROCESO</p><h2>De la solicitud a la decisión</h2></div><span class="small text-secondary">Cambia de perfil para recorrer la demo</span></div>
+    <div class="row g-3 process-steps">
+        <div class="col-md-4"><article class="process-step"><span>01</span><h3>Registra</h3><p>El estudiante ingresa una asignatura y confirma los documentos simulados.</p></article></div>
+        <div class="col-md-4"><article class="process-step"><span>02</span><h3>Verifica</h3><p>Secretaría revisa la información o solicita una subsanación con sustento.</p></article></div>
+        <div class="col-md-4"><article class="process-step"><span>03</span><h3>Evalúa y resuelve</h3><p>La comisión evalúa la equivalencia y registra su decisión en el historial.</p></article></div>
+    </div>
+</section>
+<section class="panel">
+    <div class="section-heading"><div><p class="eyebrow">BANDEJA CENTRALIZADA</p><h2>Últimas solicitudes</h2></div><a asp-controller="Solicitudes" asp-action="Index">Ver todas →</a></div>
+    <partial name="_SolicitudesTabla" model="Model.Recientes" />
+</section>

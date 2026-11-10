@@ -1,0 +1,27 @@
+@model CrearSolicitudViewModel
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{ ViewData["Title"] = "Nueva solicitud"; }
+<a asp-action="Index" class="back-link">← Volver a solicitudes</a>
+<p class="eyebrow mt-4">PASO 01 / REGISTRO</p><h1>Nueva solicitud</h1>
+<p class="text-secondary mb-4">Registra una asignatura por solicitud. Utiliza exclusivamente información ficticia.</p>
+@if (Perfiles.Actual != PerfilDemo.Estudiante)
+{ <div class="alert alert-warning">Selecciona el perfil simulado Estudiante en el menú superior para registrar una solicitud.</div> }
+<div class="row g-4"><div class="col-lg-8"><form asp-action="Crear" method="post" class="panel" data-submit-once>
+    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    <h2 class="mb-4">Información del expediente</h2>
+    <div class="row g-3">
+        <div class="col-md-6"><label asp-for="Estudiante" class="form-label"></label><input asp-for="Estudiante" class="form-control" /><span asp-validation-for="Estudiante" class="text-danger"></span></div>
+        <div class="col-md-6"><label asp-for="InstitucionOrigen" class="form-label"></label><input asp-for="InstitucionOrigen" class="form-control" /><span asp-validation-for="InstitucionOrigen" class="text-danger"></span></div>
+        <div class="col-12"><label asp-for="AsignaturaOrigen" class="form-label"></label><input asp-for="AsignaturaOrigen" class="form-control" placeholder="Ej. Introducción a la programación" /><span asp-validation-for="AsignaturaOrigen" class="text-danger"></span></div>
+        <div class="col-12"><label asp-for="AsignaturaId" class="form-label"></label><select asp-for="AsignaturaId" asp-items="ViewBag.Asignaturas" class="form-select"><option value="0">Selecciona una asignatura</option></select><span asp-validation-for="AsignaturaId" class="text-danger"></span></div>
+        <div class="col-md-4"><label asp-for="CreditosOrigen" class="form-label"></label><input asp-for="CreditosOrigen" class="form-control" min="1" max="10" /><span asp-validation-for="CreditosOrigen" class="text-danger"></span></div>
+        <div class="col-md-4"><label asp-for="Nota" class="form-label"></label><input asp-for="Nota" class="form-control" min="0" max="20" /><span asp-validation-for="Nota" class="text-danger"></span></div>
+        <div class="col-md-4"><label asp-for="Coincidencia" class="form-label"></label><input asp-for="Coincidencia" class="form-control" min="0" max="100" /><span asp-validation-for="Coincidencia" class="text-danger"></span></div>
+    </div>
+    <hr class="my-4" /><h2>Lista de documentos simulados</h2><p class="small text-secondary">La demo registra esta confirmación; no recibe ni verifica archivos reales.</p>
+    <div class="form-check mb-2"><input asp-for="Certificado" class="form-check-input" /><label asp-for="Certificado" class="form-check-label"></label></div>
+    <div class="form-check mb-4"><input asp-for="Silabo" class="form-check-input" /><label asp-for="Silabo" class="form-check-label"></label></div>
+    <button class="btn btn-primary" type="submit" disabled="@(Perfiles.Actual != PerfilDemo.Estudiante)">Registrar solicitud</button>
+    <a class="btn btn-outline-secondary ms-2" asp-action="Index">Cancelar</a>
+</form></div><aside class="col-lg-4"><div class="info-card"><p class="eyebrow">ANTES DE ENVIAR</p><h2>Un expediente completo</h2><p>La validación de campos evita registros incompletos. Secretaría revisará el expediente antes de remitirlo a la comisión.</p><hr /><p class="small">Los cursos y umbrales son ilustrativos: nota mínima 11, coincidencia mínima 80% y créditos de origen suficientes. No representan el reglamento oficial de la USMP.</p></div></aside></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
