@@ -1,5 +1,17 @@
 # Verificación local · 9 de noviembre de 2026 (America/Lima)
 
+## Actualización para publicación
+
+Se agregó `IsolateDemoSessions`, una migración aditiva que conserva registros anteriores, y aislamiento por sesión para solicitudes e historial. Las claves de cookies son efímeras, coherentes con la sesión en memoria y Render Free. Los registros anteriores permanecen en un ámbito interno sin exponerse a navegadores nuevos.
+
+Verificación repetida: `dotnet restore --locked-mode`; compilación Release con `--warnaserror` (0 advertencias, 0 errores); **31 pruebas correctas, 0 fallidas, 0 omitidas**; modelo sin cambios pendientes respecto de las migraciones; publicación Release correcta. Las pruebas nuevas comprueban los ejemplos de sesión y que un segundo navegador no pueda leer ni modificar un expediente ajeno, incluso conociendo su identificador y revisión.
+
+Se revisaron las referencias remotas, los archivos versionados y patrones de credenciales en todo el historial. No se detectaron bases locales, archivos temporales o credenciales preparados para publicación. El escaneo por patrones no equivale a una garantía exhaustiva sobre cualquier formato de secreto.
+
+La publicación Release se inició en `Production` con `PORT=10001` y una base SQLite nueva dentro de `artifacts/`. Aplicó ambas migraciones; el siguiente arranque conservó la base sin migraciones pendientes. Una comprobación HTTP real verificó `/health`, bandejas y detalle propio con HTTP 200, ejemplos distintos para dos navegadores y HTTP 404 al consultar un expediente del otro navegador. El artefacto y la base no se versionan.
+
+La sección siguiente conserva la evidencia histórica de la implementación inicial; el número actual de pruebas es 31. El resultado remoto de GitHub Actions debe consultarse en el repositorio después de publicar. Los [pasos para Render Free](DESPLIEGUE.md) incluyen la verificación del commit desplegado y del aislamiento entre navegadores.
+
 ## Entorno y estado inicial
 
 - Carpeta inicial vacía, sin proyecto ni repositorio Git local; no existía `AGENTS.md`.

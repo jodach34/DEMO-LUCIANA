@@ -9,6 +9,7 @@ public enum AccionSolicitud { Revisar, Observar, Subsanar, Aprobar, Rechazar }
 public class Solicitud
 {
     public int Id { get; set; }
+    [MaxLength(32)] public string AmbitoDemo { get; set; } = "";
     [MaxLength(80)] public string Estudiante { get; set; } = "";
     [MaxLength(120)] public string InstitucionOrigen { get; set; } = "";
     [MaxLength(120)] public string AsignaturaOrigen { get; set; } = "";
@@ -37,6 +38,7 @@ public class Seguimiento
 {
     public int Id { get; set; }
     public int SolicitudId { get; set; }
+    public Solicitud Solicitud { get; set; } = null!;
     public EstadoSolicitud Estado { get; set; }
     public PerfilDemo Perfil { get; set; }
     public DateTime FechaUtc { get; set; }

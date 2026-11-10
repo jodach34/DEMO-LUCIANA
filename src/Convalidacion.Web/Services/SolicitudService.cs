@@ -32,6 +32,7 @@ public class SolicitudService(AppDbContext db, TimeProvider clock, ILogger<Solic
         var now = clock.GetUtcNow().UtcDateTime;
         var solicitud = new Solicitud
         {
+            AmbitoDemo = db.AmbitoActual,
             Estudiante = model.Estudiante.Trim(), InstitucionOrigen = model.InstitucionOrigen.Trim(),
             AsignaturaOrigen = model.AsignaturaOrigen.Trim(), AsignaturaId = model.AsignaturaId,
             CreditosOrigen = model.CreditosOrigen, Nota = model.Nota, Coincidencia = model.Coincidencia,

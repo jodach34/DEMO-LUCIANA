@@ -20,7 +20,7 @@ dotnet test --no-build
 dotnet run --project src/Convalidacion.Web --launch-profile http
 ```
 
-Abre <http://localhost:5283>. El inicio aplica las migraciones y crea cuatro asignaturas ilustrativas y cinco solicitudes, una por estado, si no existe catálogo. SQLite local se guarda en `src/Convalidacion.Web/App_Data/convalidacion.db`, fuera de Git. Las fechas del historial se muestran en UTC.
+Abre <http://localhost:5283>. El inicio aplica las migraciones y prepara cuatro asignaturas ilustrativas. Cada sesión de navegador recibe cinco solicitudes propias, una por estado. SQLite local se guarda en `src/Convalidacion.Web/App_Data/convalidacion.db`, fuera de Git. Las fechas del historial se muestran en UTC.
 
 Los paquetes y sus dependencias quedan registrados en `packages.lock.json`. Para actualizar versiones, modifica las referencias, ejecuta `dotnet restore`, revisa los locks y vuelve a probar.
 
@@ -47,7 +47,7 @@ stateDiagram-v2
 
 Reglas **didácticas**, no normativa oficial de la USMP: nota mínima 11/20, coincidencia mínima de 80% y créditos de origen iguales o superiores a los del destino. El registro admite solicitudes con criterios insuficientes para demostrar la evaluación y rechazo. La coincidencia se ingresa como dato simulado; no se calcula a partir de un sílabo.
 
-Alcance: una asignatura por expediente; lista documental simulada, sin carga de archivos; subsanación mediante comentario, sin edición de notas o créditos; decisiones finales inmutables desde la interfaz. Los visitantes comparten los expedientes ficticios. La bandeja muestra las 100 solicitudes más recientes que cumplen el filtro.
+Alcance: una asignatura por expediente; lista documental simulada, sin carga de archivos; subsanación mediante comentario, sin edición de notas o créditos; decisiones finales inmutables desde la interfaz. Los expedientes, comentarios y perfiles pertenecen a la sesión de cada navegador. La bandeja muestra las 100 solicitudes más recientes de esa sesión que cumplen el filtro.
 
 ## Organización
 
@@ -64,7 +64,7 @@ tests/Convalidacion.Tests/
   WebTests.cs                Integración HTTP con MVC, cookies y antiforgery
 ```
 
-Se usa directamente EF Core desde servicios y consultas MVC, sin repositorios genéricos ni capas adicionales. Cada cambio guarda estado e historial en la misma operación transaccional. Un token de concurrencia impide sobrescribir una revisión más reciente. El perfil simulado no constituye un control de acceso de producción.
+Se usa directamente EF Core desde servicios y consultas MVC, sin repositorios genéricos ni capas adicionales. Cada cambio guarda estado e historial en la misma operación transaccional. Un token de concurrencia impide sobrescribir una revisión más reciente. Los filtros globales de EF Core aíslan solicitudes e historial mediante una clave aleatoria generada en el servidor y guardada en sesión. No se acepta esa clave desde formularios o parámetros. El perfil simulado no constituye autenticación ni un control de acceso para expedientes reales.
 
 Validación del navegador y del servidor; antiforgery en POST; redirecciones limitadas a rutas locales; páginas para errores y HTTP 404; logs de consola con identificadores y estados, sin registrar nombres ni contenido del expediente. `/health` comprueba conectividad SQLite. Los recursos visuales se sirven localmente.
 
@@ -90,7 +90,7 @@ dotnet ef migrations add NombreDelCambio --project src/Convalidacion.Web --outpu
 
 Las variables de entorno sustituyen los valores JSON usando doble guion bajo, por ejemplo `ConnectionStrings__DefaultConnection` y `Demo__SeedData`. Para iniciar sin ejemplos, define `Demo__SeedData=false` antes del primer arranque con una base vacía. No elimina ejemplos ya existentes.
 
-El sembrado es determinista e idempotente: conserva las solicitudes creadas por visitantes en una base existente. Para una demostración nueva, detén la aplicación y usa una ruta de base SQLite nueva mediante la variable de conexión. No borres una base que quieras conservar.
+El sembrado es determinista e idempotente: conserva las solicitudes de cada sesión. La migración de aislamiento agrega una columna y un índice sin borrar registros anteriores; estos permanecen en un ámbito interno y no se publican a visitantes. Para una demostración nueva, utiliza otro navegador o una sesión privada. La sesión caduca tras dos horas de inactividad y se pierde al reiniciar el proceso, aunque el archivo SQLite local continúe existiendo. Las claves de cookies también son efímeras. No uses datos reales ni consideres la sesión una identidad autenticada.
 
 No se necesitan contraseñas ni claves. No agregues secretos, bases SQLite, archivos `.env` o credenciales de producción al repositorio. Conserva las licencias de las librerías incluidas en `wwwroot/lib`.
 
@@ -105,13 +105,15 @@ Abre <http://localhost:8080> y <http://localhost:8080/health>. Imagen multi-stag
 
 Para desplegar después de publicar la versión estable en `main`:
 
+Consulta los [pasos exactos de conexión, configuración y verificación](docs/DESPLIEGUE.md). El despliegue requiere una cuenta Render conectada; no basta con publicar el repositorio.
+
 1. Conecta tu cuenta de GitHub a Render y autoriza **exactamente** `jodach34/DEMO-LUCIANA`.
 2. Crea un Blueprint usando `render.yaml`, o un Web Service con runtime Docker, rama `main`, Dockerfile `./Dockerfile`, contexto raíz y plan **Free**.
 3. Mantén `ASPNETCORE_ENVIRONMENT=Production`, la conexión SQLite de `/tmp` y `/health` como comprobación de salud.
 4. No agregues discos persistentes. El Blueprint solicita despliegue después de pasar los checks de GitHub; verifica que la integración esté activa.
 5. Revisa logs de migración/arranque, `/health` y el recorrido funcional en la URL asignada.
 
-Render Free pierde el sistema de archivos al reiniciar, redesplegar o suspender por inactividad. La base y las sesiones son temporales; los ejemplos se reconstruyen al arrancar con un disco vacío. Puede haber espera al reactivar el servicio. Esto es adecuado para la demo, no para expedientes reales. Ver [límites oficiales de Render Free](https://render.com/docs/free) y [Blueprints](https://render.com/docs/blueprint-spec).
+Render Free pierde el sistema de archivos al reiniciar, redesplegar o suspender por inactividad. La base y las sesiones son temporales; el esquema se reconstruye al arrancar con un disco vacío y los ejemplos se preparan al abrir una sesión. Puede haber espera al reactivar el servicio. Esto es adecuado para la demo, no para expedientes reales. Ver [límites oficiales de Render Free](https://render.com/docs/free) y [Blueprints](https://render.com/docs/blueprint-spec).
 
 ## Git e integración continua
 
