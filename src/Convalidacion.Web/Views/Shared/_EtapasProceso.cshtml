@@ -1,10 +1,10 @@
-<section class="panel stages-panel" aria-labelledby="tituloEtapas">
+@model Solicitud
+@{ var etapas = new[] { ("file", "Recepción y verificación de expediente"), ("search-file", "Evaluación técnica y académica"), ("users", "Aprobación oficial y emisión de resolución"), ("check", "Notificación y carga académica") }; }
+<section class="panel stages-panel mb-3" aria-labelledby="tituloEtapas">
     <h2 id="tituloEtapas">Etapas del proceso</h2>
     <ol class="process-steps">
-        @foreach (var etapa in new[] { ("file", "Recepción y verificación"), ("search-file", "Evaluación técnica y académica"), ("users", "Aprobación y resolución"), ("check", "Notificación y registro académico") })
-        {
-            <li><span class="step-icon"><partial name="_Icon" model="etapa.Item1" /></span><span>@etapa.Item2</span></li>
-        }
+        @for(var i = 0; i < etapas.Length; i++)
+        { <li class="@(Model.Id > 0 && Model.VersionProceso == 2 ? (Model.Etapa == i + 1 ? "current-step" : Model.Etapa > i + 1 ? "completed-step" : "") : "")" aria-current="@(Model.Id > 0 && Model.VersionProceso == 2 && Model.Etapa == i + 1 ? "step" : null)"><span class="step-icon"><partial name="_Icon" model="etapas[i].Item1" /></span><span>@etapas[i].Item2</span></li> }
     </ol>
-    <p class="process-caption">Guía del proceso. El estado real se muestra en cada expediente.</p>
+    <p class="process-caption">@(Model.Id > 0 && Model.VersionProceso == 2 ? $"{Model.Codigo} · Etapa {Model.Etapa} de 4 · {Model.Estado.Texto()}" : "Cuatro etapas del proceso de demostración.")</p>
 </section>

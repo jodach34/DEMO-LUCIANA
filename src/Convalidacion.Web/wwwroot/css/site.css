@@ -270,3 +270,46 @@ p { line-height: 1.6; }
     .topbar-actions { gap: 0; }
     .profile-control .form-select { width: 134px; font-size: .8rem; }
 }
+
+/* Extensiones del proceso: conservan los componentes y la identidad del Bloque 1. */
+.profile-control .form-select { width: 290px; max-width: 32vw; }
+.notification-menu { max-height: min(70vh, 520px); overflow-y: auto; }
+.status-Presentada, .status-Subsanada { background: #e7effa; color: #25548a; }
+.status-VerificacionDocumental, .status-EvaluacionAcademica, .status-RevisionDecanal { background: #eee8f7; color: #60408c; }
+.status-PendienteSubsanacion, .result-Observada { background: #fbe3e9; color: #912742; }
+.status-DictamenEmitido, .status-DictamenAprobado, .status-ResolucionEmitida { background: #e8eff7; color: #315477; }
+.status-NotificacionRealizada, .status-RegistroAcademicoPendiente { background: #fff0d2; color: #785118; }
+.status-Finalizada, .result-Aprobada { background: #dff2e5; color: #256b3d; }
+.result-Rechazada { background: #f5e5e6; color: #8b2e38; }
+.result-Pendiente { background: #eeedf2; color: #625d6b; }
+.process-steps li.current-step .step-icon { background: var(--wine); border-color: var(--wine); color: #fff; box-shadow: none; }
+.process-steps li.completed-step .step-icon { background: #e7f2eb; border-color: #c3dfcd; color: var(--success); }
+.process-steps li.completed-step::after { background: #bad7c6; }
+.dashboard-overview .stages-panel { margin-bottom: 0 !important; }
+.course-editor { border: 1px solid var(--line); border-radius: 12px; padding: 18px; min-width: 0; }
+.course-editor legend { float: none; width: auto; font-size: 1rem; font-weight: 600; padding: 0 6px; }
+.course-detail { padding: 20px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.course-detail:first-of-type { border-top: 0; }
+.course-detail:last-child { padding-bottom: 0; }
+.course-detail h3 { font-size: 1.1rem; line-height: 1.45; }
+.evaluation-form { background: var(--paper); padding: 18px; border-radius: 10px; }
+.evaluation-history { padding: 12px 0; border-top: 1px solid var(--line); margin-top: 10px; font-size: .86rem; overflow-wrap: anywhere; }
+.evaluation-history p { margin: 6px 0; white-space: pre-wrap; }
+.exception-note { background: #fff4dc; border-radius: 8px; padding: 12px; font-size: .85rem; white-space: pre-wrap; }
+.document-links { list-style: none; padding: 0; margin: 16px 0 0; }
+.document-links li { padding: 12px 0; border-top: 1px solid var(--line); }
+.document-links span { display: block; font-size: .8rem; color: var(--muted); margin-top: 5px; }
+.document-links p { margin: 6px 0 0; font-size: .85rem; }
+.demo-document-warning { color: var(--wine-dark); background: var(--wine-tint); border: 1px solid #e8cbd4; border-radius: 8px; padding: 13px; font-weight: 700; font-size: .84rem; margin: 18px 0; }
+.academic-document { max-width: 1250px; margin-left: auto; margin-right: auto; }
+.document-justification { min-width: 240px; max-width: 440px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.preserve-lines { white-space: pre-wrap; overflow-wrap: anywhere; }
+.status { white-space: normal; }
+.table .status { min-width: 95px; }
+.active-request .status { max-width: 190px; }
+@media(max-width: 767.98px) {
+    .profile-control .form-select { width: 230px; max-width: 57vw; font-size: .8rem; }
+    .course-editor, .evaluation-form { padding: 13px; }
+    .notification-menu { inset: 62px 12px auto auto !important; }
+}
+@media(max-width: 359.98px) { .profile-control .form-select { width: 196px; max-width: 60vw; font-size: .75rem; } }

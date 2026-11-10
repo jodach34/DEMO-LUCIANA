@@ -2,7 +2,9 @@
 @{ ViewData["Title"] = "Solicitudes"; }
 <div class="section-heading mb-4"><div><p class="eyebrow">SEGUIMIENTO DEL PROCESO</p><h1>Solicitudes de convalidación</h1><p class="text-secondary mb-0">Consulta expedientes ficticios, su estado y el historial de atención.</p></div><a class="btn btn-primary" asp-action="Crear">+ Nueva solicitud</a></div>
 <section class="panel">
+    @if(Model.Pendientes || Model.ConDictamen || Model.ConResolucion){ <p class="alert alert-light">@(Model.Pendientes ? "Pendientes de " + Context.RequestServices.GetRequiredService<Convalidacion.Web.Services.PerfilDemoService>().Actual.Texto() : Model.ConDictamen ? "Expedientes con dictamen académico" : "Expedientes con resolución simulada")</p> }
     <form method="get" class="row g-3 align-items-end mb-4">
+        <input type="hidden" name="pendientes" value="@Model.Pendientes.ToString().ToLowerInvariant()" /><input type="hidden" name="conDictamen" value="@Model.ConDictamen.ToString().ToLowerInvariant()" /><input type="hidden" name="conResolucion" value="@Model.ConResolucion.ToString().ToLowerInvariant()" />
         <div class="col-md-6"><label for="buscar" class="form-label">Buscar estudiante, asignatura o número de expediente</label><input id="buscar" name="buscar" value="@Model.Buscar" maxlength="120" class="form-control" placeholder="Ej. Demo 001, Base de datos o 1" /></div>
         <div class="col-md-3"><label for="estado" class="form-label">Estado</label><select id="estado" name="estado" class="form-select"><option value="">Todos los estados</option>@foreach (var estado in Enum.GetValues<EstadoSolicitud>()) { <option value="@estado" selected="@(Model.Estado == estado)">@estado.Texto()</option> }</select></div>
         <div class="col-md-3 d-flex gap-2"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-outline-secondary" asp-action="Index">Limpiar</a></div>

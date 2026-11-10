@@ -1,5 +1,7 @@
 using Convalidacion.Web.Models;
+using Convalidacion.Web.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Convalidacion.Web.Data;
 
@@ -7,7 +9,6 @@ public static class DemoSeeder
 {
     public static async Task SeedAsync(AppDbContext db)
     {
-        // Una sola transacción evita datos parciales. No reinicia solicitudes de los visitantes.
         await using var transaction = await db.Database.BeginTransactionAsync();
         if (!await db.Asignaturas.AnyAsync())
         {
@@ -18,35 +19,62 @@ public static class DemoSeeder
                 new() { Id = 4, Codigo = "DEMO-104", Nombre = "Ingeniería de software", Creditos = 4 });
             await db.SaveChangesAsync();
         }
-        // Cada navegador recibe su propia copia de los expedientes ficticios.
+        // No reescribe ni reemplaza expedientes preexistentes, incluso los de la versión anterior.
         if (!await db.Solicitudes.AnyAsync())
         {
-            var fecha = new DateTime(2026, 11, 1, 15, 0, 0, DateTimeKind.Utc);
-            foreach (var estado in Enum.GetValues<EstadoSolicitud>())
+            var catalogo = await db.Asignaturas.OrderBy(a => a.Id).Take(2).ToListAsync();
+            if (catalogo.Count < 2) { await transaction.CommitAsync(); return; }
+            for (var i = 0; i < 6; i++)
             {
-                var index = (int)estado;
-                var creada = fecha.AddDays(index);
-                var historial = new List<Seguimiento> { new() { Estado = EstadoSolicitud.Recibida,
-                    Perfil = PerfilDemo.Estudiante, FechaUtc = creada, Comentario = "Registro de ejemplo con documentos simulados." } };
-                if (estado is EstadoSolicitud.EnRevision or EstadoSolicitud.Aprobada or EstadoSolicitud.Rechazada)
-                    historial.Add(new() { Estado = EstadoSolicitud.EnRevision, Perfil = PerfilDemo.Secretaria,
-                        FechaUtc = creada.AddHours(1), Comentario = "Secretaría verificó la documentación simulada." });
-                if (estado is EstadoSolicitud.Observada or EstadoSolicitud.Aprobada or EstadoSolicitud.Rechazada)
-                    historial.Add(new() { Estado = estado, Perfil = estado == EstadoSolicitud.Observada ? PerfilDemo.Secretaria : PerfilDemo.Comision,
-                        FechaUtc = creada.AddHours(2), Comentario = estado switch {
-                            EstadoSolicitud.Observada => "Completar la descripción del sílabo simulado mediante una subsanación.",
-                            EstadoSolicitud.Aprobada => "Equivalencia aceptada según los criterios didácticos.",
-                            _ => "Coincidencia de contenidos insuficiente para la demo."
-                        } });
-                db.Solicitudes.Add(new() { AmbitoDemo = db.AmbitoActual, Estudiante = $"Estudiante Demo {index + 1:D3}",
-                    InstitucionOrigen = "Universidad Ficticia de Ejemplo", AsignaturaOrigen = "Curso de origen simulado",
-                    AsignaturaId = index % 4 + 1, CreditosOrigen = 4, Nota = 16,
-                    Coincidencia = estado == EstadoSolicitud.Rechazada ? 60 : 90, Estado = estado,
-                    CreadaUtc = creada, ActualizadaUtc = historial.Last().FechaUtc,
-                    Revision = new Guid(index + 1, 0, 0, new byte[8]), Historial = historial });
+                var reloj = new RelojSemilla(new DateTimeOffset(2026, 11, 1 + i, 15, 0, 0, TimeSpan.Zero));
+                var service = new SolicitudService(db, reloj, NullLogger<SolicitudService>.Instance);
+                var id = await service.CrearAsync(new()
+                {
+                    Estudiante = $"Estudiante Demo {i + 1:D3}", InstitucionOrigen = "Institución Ficticia de Ejemplo", CertificadoDocumento = "CERT-DEMO-01",
+                    Cursos = catalogo.Select((a, n) => new CursoSolicitudViewModel { AsignaturaId = a.Id, AsignaturaOrigen = $"Curso ficticio de origen {n + 1}",
+                        CreditosOrigen = a.Creditos, Nota = 16, SilaboDocumento = "SIL-DEMO-01" }).ToList()
+                }, PerfilDemo.Estudiante);
+                async Task Aplicar(AccionSolicitud accion, PerfilDemo perfil)
+                {
+                    var s = await db.Solicitudes.SingleAsync(s => s.Id == id);
+                    await service.EjecutarAsync(new() { Id = id, Revision = s.Revision, Accion = accion,
+                        Comentario = $"Ejemplo ficticio: {accion.Texto()}.", DocumentosVerificados = true,
+                        NumeroResolucion = $"DEMO-RD-{id:D4}", FechaResolucion = new DateOnly(2026, 11, 1 + i) }, perfil);
+                }
+                if (i == 0) continue;
+                await Aplicar(AccionSolicitud.Recibir, PerfilDemo.Admision);
+                if (i == 1)
+                {
+                    await Aplicar(AccionSolicitud.ObservarDocumentos, PerfilDemo.Admision);
+                    await Aplicar(AccionSolicitud.DevolverEstudiante, PerfilDemo.Admision); continue;
+                }
+                await Aplicar(AccionSolicitud.DerivarDepartamento, PerfilDemo.Admision);
+                if (i == 2) continue;
+                foreach (var c in await db.Cursos.Where(c => c.SolicitudId == id).OrderBy(c => c.Id).ToListAsync())
+                {
+                    var s = await db.Solicitudes.SingleAsync(s => s.Id == id);
+                    var aprobada = c.AsignaturaId == catalogo[0].Id;
+                    await service.EvaluarAsync(new() { Id = id, Revision = s.Revision, AsignaturaSolicitudId = c.Id, Coincidencia = aprobada ? 85 : 60,
+                        Resultado = aprobada ? ResultadoAcademico.Aprobada : ResultadoAcademico.Rechazada,
+                        Justificacion = aprobada ? "Correspondencia académica ficticia verificada manualmente." : "Contenidos ficticios insuficientes para la convalidación." }, PerfilDemo.Director);
+                }
+                await Aplicar(AccionSolicitud.EmitirDictamen, PerfilDemo.Director);
+                await Aplicar(AccionSolicitud.RemitirDecano, PerfilDemo.Director);
+                if (i == 3) continue;
+                await Aplicar(AccionSolicitud.AprobarDictamen, PerfilDemo.Decano);
+                await Aplicar(AccionSolicitud.EmitirResolucion, PerfilDemo.Decano);
+                await Aplicar(AccionSolicitud.Notificar, PerfilDemo.Decano);
+                await Aplicar(AccionSolicitud.RemitirRegistro, PerfilDemo.Decano);
+                if (i == 4) continue;
+                await Aplicar(AccionSolicitud.RegistrarAsignaturas, PerfilDemo.RegistrosAcademicos);
+                await Aplicar(AccionSolicitud.Finalizar, PerfilDemo.RegistrosAcademicos);
             }
-            await db.SaveChangesAsync();
         }
         await transaction.CommitAsync();
+    }
+    private sealed class RelojSemilla(DateTimeOffset fecha) : TimeProvider
+    {
+        private DateTimeOffset actual = fecha;
+        public override DateTimeOffset GetUtcNow() { var valor = actual; actual = actual.AddMinutes(1); return valor; }
     }
 }

@@ -11,29 +11,29 @@
         @if (estudiante)
         { <a class="btn btn-primary" asp-controller="Solicitudes" asp-action="Crear">Nueva solicitud <partial name="_Icon" model='@("plus")' /></a> }
         else
-        { <a class="btn btn-primary" asp-controller="Solicitudes" asp-action="Index" asp-route-estado="@(Perfiles.Actual == PerfilDemo.Secretaria ? EstadoSolicitud.Recibida : EstadoSolicitud.EnRevision)">@(Perfiles.Actual == PerfilDemo.Secretaria ? "Verificar solicitudes" : "Evaluar solicitudes") <partial name="_Icon" model='@("chevron-right")' /></a> }
+        { <a class="btn btn-primary" asp-controller="Solicitudes" asp-action="Index" asp-route-pendientes="true">Abrir mi bandeja <partial name="_Icon" model='@("chevron-right")' /></a> }
     </div>
     <div class="banner-campus" aria-hidden="true"></div>
 </section>
 <div class="dashboard-grid">
     <div class="dashboard-overview">
-        <partial name="_EtapasProceso" />
+        <partial name="_EtapasProceso" model="@(Model.Activa ?? new Solicitud())" />
         <section class="panel quick-access" aria-labelledby="tituloAccesos">
             <h2 id="tituloAccesos">Accesos rápidos</h2>
             <div class="quick-access-grid">
                 @if (estudiante)
                 { <a asp-controller="Solicitudes" asp-action="Crear"><partial name="_Icon" model='@("file-plus")' /><span>Nueva<br />solicitud</span><span class="quick-arrow" aria-hidden="true">›</span></a> }
                 else
-                { <a asp-controller="Solicitudes" asp-action="Index" asp-route-estado="@(Perfiles.Actual == PerfilDemo.Secretaria ? EstadoSolicitud.Recibida : EstadoSolicitud.EnRevision)"><partial name="_Icon" model='@("clipboard")' /><span>@(Perfiles.Actual == PerfilDemo.Secretaria ? "Verificación" : "Evaluación")<br />de solicitudes</span><span class="quick-arrow" aria-hidden="true">›</span></a> }
+                { <a asp-controller="Solicitudes" asp-action="Index" asp-route-pendientes="true"><partial name="_Icon" model='@("clipboard")' /><span>Mi bandeja<br />de atención</span><span class="quick-arrow" aria-hidden="true">›</span></a> }
                 <a asp-controller="Solicitudes" asp-action="Index"><partial name="_Icon" model='@("book")' /><span>Consultar<br />solicitudes</span><span class="quick-arrow" aria-hidden="true">›</span></a>
-                <a asp-controller="Solicitudes" asp-action="Index" asp-route-estado="Observada"><partial name="_Icon" model='@("clipboard")' /><span>Solicitudes<br />observadas</span><span class="quick-arrow" aria-hidden="true">›</span></a>
+                <a asp-controller="Solicitudes" asp-action="Index" asp-route-conResolucion="true"><partial name="_Icon" model='@("clipboard")' /><span>Consultar<br />resoluciones</span><span class="quick-arrow" aria-hidden="true">›</span></a>
                 <a asp-controller="Home" asp-action="Privacy"><partial name="_Icon" model='@("help")' /><span>Acerca de<br />la demo</span><span class="quick-arrow" aria-hidden="true">›</span></a>
             </div>
         </section>
     </div>
-    <partial name="_ResumenSolicitud" model="Model.Recientes" />
+    <partial name="_ResumenSolicitud" model="@(new ResumenSolicitudViewModel(Model.Activa))" />
     <section class="panel recent-requests" aria-labelledby="tituloRecientes">
-        <div class="section-heading"><h2 id="tituloRecientes">@(estudiante ? "Mis solicitudes de convalidación" : "Solicitudes de convalidación")</h2><a asp-controller="Solicitudes" asp-action="Index">Ver historial →</a></div>
+        <div class="section-heading"><h2 id="tituloRecientes">@(estudiante ? "Mis solicitudes de convalidación" : $"Bandeja · {Perfiles.Actual.Texto()}")</h2><a asp-controller="Solicitudes" asp-action="Index">Ver todas →</a></div>
         <partial name="_SolicitudesTabla" model="Model.Recientes" />
     </section>
     <section class="panel digital-benefits" aria-labelledby="tituloBeneficios">
@@ -47,6 +47,6 @@
     </section>
 </div>
 <section class="dashboard-metrics" aria-label="Indicadores actuales de solicitudes">
-    @foreach (var indicador in new[] { ("Solicitudes registradas", Model.Total), ("Por atender", Model.Pendientes), ("Con observaciones", Model.Observadas), ("Aprobadas", Model.Aprobadas) })
+    @foreach (var indicador in new[] { ("Solicitudes registradas", Model.Total), ("Por atender en mi perfil", Model.Pendientes), ("Con observaciones", Model.Observadas), ("Finalizadas", Model.Finalizadas) })
     { <article class="metric"><strong>@indicador.Item2.ToString("D2")</strong><span>@indicador.Item1</span></article> }
 </section>
