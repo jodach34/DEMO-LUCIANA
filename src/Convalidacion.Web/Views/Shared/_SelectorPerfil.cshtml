@@ -1,0 +1,12 @@
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+<form asp-controller="Perfiles" asp-action="Cambiar" method="post" class="profile-form" id="selectorPerfil">
+    <span class="profile-avatar" aria-hidden="true"><partial name="_Icon" model='@("user")' /></span>
+    <div class="profile-control">
+        <label for="perfil">Perfil simulado</label>
+        <select id="perfil" name="perfil" class="form-select form-select-sm" aria-label="Perfil simulado; al seleccionar se abre su panel" title="@Perfiles.Actual.Texto()">
+            @foreach (var perfil in Enum.GetValues<PerfilDemo>())
+            { <option value="@perfil" selected="@(perfil == Perfiles.Actual)">@perfil.Texto()</option> }
+        </select>
+    </div>
+    <noscript><button class="btn btn-sm btn-outline-primary" type="submit">Abrir perfil</button></noscript>
+</form>

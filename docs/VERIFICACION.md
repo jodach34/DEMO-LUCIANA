@@ -1,5 +1,11 @@
 # Verificación local · 9 de noviembre de 2026 (America/Lima)
 
+## Bloque 2: evidencia vigente
+
+El [informe del Bloque 2](BLOQUE-2-FLUJO-CONVALIDACION.md) documenta la verificación actual: compilación Release sin advertencias, 51 pruebas .NET correctas y 207 comprobaciones en Chrome, con capturas de los cinco perfiles en escritorio y móvil. Incluye migraciones sobre datos anteriores, persistencia, flujo completo, aprobación parcial y aislamiento de sesiones. No se desplegó en Render ni se ejecutó GitHub Actions.
+
+Las secciones siguientes conservan la evidencia histórica de las versiones iniciales de tres perfiles.
+
 ## Actualización para publicación
 
 Se agregó `IsolateDemoSessions`, una migración aditiva que conserva registros anteriores, y aislamiento por sesión para solicitudes e historial. Las claves de cookies son efímeras, coherentes con la sesión en memoria y Render Free. Los registros anteriores permanecen en un ámbito interno sin exponerse a navegadores nuevos.
@@ -10,7 +16,7 @@ Se revisaron las referencias remotas, los archivos versionados y patrones de cre
 
 La publicación Release se inició en `Production` con `PORT=10001` y una base SQLite nueva dentro de `artifacts/`. Aplicó ambas migraciones; el siguiente arranque conservó la base sin migraciones pendientes. Una comprobación HTTP real verificó `/health`, bandejas y detalle propio con HTTP 200, ejemplos distintos para dos navegadores y HTTP 404 al consultar un expediente del otro navegador. El artefacto y la base no se versionan.
 
-La sección siguiente conserva la evidencia histórica de la implementación inicial; el número actual de pruebas es 31. El resultado remoto de GitHub Actions debe consultarse en el repositorio después de publicar. Los [pasos para Render Free](DESPLIEGUE.md) incluyen la verificación del commit desplegado y del aislamiento entre navegadores.
+La sección siguiente conserva la evidencia histórica de la implementación inicial; al momento de esa revisión había 31 pruebas. El resultado remoto de GitHub Actions debe consultarse en el repositorio después de publicar. Los [pasos para Render Free](DESPLIEGUE.md) incluyen la verificación del commit desplegado y del aislamiento entre navegadores.
 
 ## Entorno y estado inicial
 

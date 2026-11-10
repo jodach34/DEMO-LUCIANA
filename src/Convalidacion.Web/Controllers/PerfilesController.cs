@@ -12,6 +12,6 @@ public class PerfilesController(PerfilDemoService perfiles) : Controller
         if (!ModelState.IsValid || !Enum.IsDefined(perfil)) return BadRequest();
         perfiles.Cambiar(perfil);
         TempData["Mensaje"] = $"Perspectiva de demo: {perfil.Texto()}.";
-        return Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl!) : RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Home");
     }
 }

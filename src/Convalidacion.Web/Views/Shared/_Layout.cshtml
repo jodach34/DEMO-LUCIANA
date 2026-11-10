@@ -1,4 +1,4 @@
-﻿@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{ var mensaje = TempData["Mensaje"] as string; }
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,43 +11,19 @@
 </head>
 <body>
     <a class="visually-hidden-focusable skip-link" href="#contenido">Saltar al contenido</a>
-    <div class="demo-banner">DEMO ACADÉMICA <span>Gestión de Procesos · USMP · Datos ficticios</span></div>
-    <header class="border-bottom bg-white">
-        <nav class="navbar navbar-expand-lg container py-3" aria-label="Navegación principal">
-            <a class="navbar-brand d-flex align-items-center gap-3" asp-controller="Home" asp-action="Index">
-                <span class="brand-mark" aria-hidden="true">U</span>
-                <span><strong>Convalidaciones</strong><small>FIA · EPICS / USMP</small></span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navegacion" aria-controls="navegacion" aria-expanded="false" aria-label="Abrir menú"><span class="navbar-toggler-icon"></span></button>
-            <div class="collapse navbar-collapse" id="navegacion">
-                <div class="navbar-nav ms-auto me-lg-4 gap-lg-3">
-                    <a class="nav-link" asp-controller="Home" asp-action="Index">Panel general</a>
-                    <a class="nav-link" asp-controller="Solicitudes" asp-action="Index">Solicitudes</a>
-                    <a class="nav-link" asp-controller="Home" asp-action="Privacy">Acerca de la demo</a>
-                </div>
-                <form asp-controller="Perfiles" asp-action="Cambiar" method="post" class="profile-form">
-                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
-                    <label for="perfil" class="small text-secondary">Perfil simulado</label>
-                    <div class="d-flex gap-2">
-                        <select id="perfil" name="perfil" class="form-select form-select-sm">
-                            @foreach (var perfil in Enum.GetValues<PerfilDemo>())
-                            { <option value="@perfil" selected="@(perfil == Perfiles.Actual)">@perfil.Texto()</option> }
-                        </select>
-                        <button class="btn btn-sm btn-outline-secondary" type="submit">Cambiar</button>
-                    </div>
-                </form>
-            </div>
-        </nav>
-    </header>
-    <main class="container py-4 py-lg-5" id="contenido">
-        @if (TempData["Mensaje"] is string mensaje)
-        { <div class="alert alert-success" role="status">@mensaje</div> }
-        @RenderBody()
-    </main>
-    <footer class="container py-4 border-top d-flex flex-wrap justify-content-between gap-2 text-secondary small">
-        <span>USMP · Facultad de Ingeniería y Arquitectura · EPICS</span>
-        <span>Prototipo universitario · Sin validez administrativa</span>
-    </footer>
+    <partial name="_MenuLateral" />
+    <div class="workspace">
+        <partial name="_BarraSuperior" model="@(mensaje ?? string.Empty)" />
+        <main class="page-content" id="contenido" tabindex="-1">
+            @if (mensaje is not null)
+            { <partial name="_Aviso" model="mensaje" /> }
+            @RenderBody()
+        </main>
+        <footer class="page-footer">
+            <span>USMP · Facultad de Ingeniería y Arquitectura · EPICS</span>
+            <span>Demo académica · Datos ficticios · Sin validez administrativa</span>
+        </footer>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

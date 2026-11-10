@@ -1,0 +1,23 @@
+@model string
+@using Microsoft.EntityFrameworkCore
+@inject Convalidacion.Web.Data.AppDbContext Db
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{ var avisos = await Db.Notificaciones.AsNoTracking().Include(n => n.Solicitud).Where(n => n.Destinatario == Perfiles.Actual).OrderByDescending(n => n.FechaUtc).ThenByDescending(n => n.Id).Take(5).ToListAsync(); var total = avisos.Count + (string.IsNullOrEmpty(Model) ? 0 : 1); }
+<header class="topbar">
+    <button class="menu-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Abrir menú"><partial name="_Icon" model='@("menu")' /></button>
+    <form asp-controller="Solicitudes" asp-action="Index" method="get" class="header-search" role="search">
+        <label class="visually-hidden" for="buscarSuperior">Buscar estudiante, asignatura o número de expediente</label>
+        <button type="submit" aria-label="Buscar solicitudes"><partial name="_Icon" model='@("search")' /></button>
+        <input id="buscarSuperior" name="buscar" value="@Context.Request.Query["buscar"]" type="search" maxlength="120" placeholder="Buscar estudiante, asignatura o expediente…" />
+    </form>
+    <div class="topbar-actions">
+        <div class="dropdown notification-dropdown">
+            <button class="notification-button" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Avisos recientes del perfil: @total">
+                <partial name="_Icon" model='@("bell")' />
+                @if (total > 0) { <span class="notification-count">@total</span> }
+            </button>
+            <div class="dropdown-menu dropdown-menu-end notification-menu"><strong>Avisos recientes del perfil</strong>@if(!string.IsNullOrEmpty(Model)){ <p>@Model</p> }@foreach(var aviso in avisos){ <p><a asp-controller="Solicitudes" asp-action="Resolucion" asp-route-id="@aviso.SolicitudId">@aviso.Mensaje</a><small class="d-block">@aviso.FechaUtc.HoraPeru()</small></p> }@if(total == 0){ <p class="mb-0">No hay avisos recientes.</p> }</div>
+        </div>
+        <partial name="_SelectorPerfil" />
+    </div>
+</header>

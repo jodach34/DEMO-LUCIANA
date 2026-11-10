@@ -20,34 +20,45 @@ dotnet test --no-build
 dotnet run --project src/Convalidacion.Web --launch-profile http
 ```
 
-Abre <http://localhost:5283>. El inicio aplica las migraciones y prepara cuatro asignaturas ilustrativas. Cada sesión de navegador recibe cinco solicitudes propias, una por estado. SQLite local se guarda en `src/Convalidacion.Web/App_Data/convalidacion.db`, fuera de Git. Las fechas del historial se muestran en UTC.
+Abre <http://localhost:5283>. El inicio aplica las migraciones y prepara cuatro asignaturas ilustrativas. Cada sesión nueva recibe seis expedientes propios con múltiples asignaturas y ejemplos de las cuatro etapas. SQLite local se guarda en `src/Convalidacion.Web/App_Data/convalidacion.db`, fuera de Git. Las fechas se almacenan en UTC y se muestran en hora de Perú (UTC−5).
 
 Los paquetes y sus dependencias quedan registrados en `packages.lock.json`. Para actualizar versiones, modifica las referencias, ejecuta `dotnet restore`, revisa los locks y vuelve a probar.
 
 ## Recorrido de la demo
 
-1. Con **Estudiante**, crea una solicitud para una asignatura de destino. Usa un nombre ficticio, curso de origen, créditos, nota y coincidencia simulada. Confirma los dos documentos de ejemplo.
-2. Cambia a **Secretaría** y abre el expediente. Inicia la revisión o registra una observación.
-3. Con **Comisión académica**, aprueba, observa o rechaza una solicitud en revisión. Cada decisión exige sustento.
-4. Una observación permite al **Estudiante** registrar una subsanación. El expediente vuelve a recibido para una nueva verificación de Secretaría.
-5. Consulta el historial y filtra la bandeja por estado, nombre ficticio, asignatura o número de expediente (por ejemplo, `1`). El panel muestra conteos reales de la base; no simula ahorros ni tiempos medidos.
+1. Con **Estudiante**, presenta un expediente de una a veinte asignaturas. Escribe cada curso de origen y selecciona su destino del catálogo ficticio, créditos, nota y sílabo simulado. Selecciona también un certificado ficticio.
+2. El selector superior cambia el perfil automáticamente y abre su panel. En **Expediente activo** puedes regresar al expediente que estabas consultando.
+3. Con **Oficina de Admisión**, recibe el expediente. Puedes observarlo y devolverlo al estudiante para subsanar; verifica después la corrección. Confirma la revisión del certificado y de todos los sílabos para derivarlo al Departamento Académico.
+4. Con **Director del Departamento Académico**, evalúa y justifica cada asignatura. Emite el dictamen y remítelo al Decano. Los resultados pueden ser distintos dentro del mismo expediente.
+5. Con **Decano**, devuelve el dictamen con observaciones o apruébalo. La devolución exige una nueva revisión del Director y una nueva versión del dictamen. Tras aprobarlo, emite una resolución ficticia con número que comience por `DEMO-` y fecha; notifica al estudiante y a Registros Académicos y remite para la carga.
+6. Con **Registros Académicos**, confirma la carga de las asignaturas aprobadas y finaliza. Las rechazadas se excluyen; el expediente puede finalizar sin asignaturas aprobadas, dejando constancia de ello.
+7. Consulta los dictámenes y resoluciones dentro de la aplicación, el historial del expediente y las versiones de documentos y evaluaciones. No tienen validez oficial.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Recibida: Estudiante registra
-    Recibida --> EnRevision: Secretaría verifica
-    Recibida --> Observada: Secretaría observa
-    EnRevision --> Observada: Comisión observa
-    Observada --> Recibida: Estudiante subsana
-    EnRevision --> Aprobada: Comisión aprueba
-    EnRevision --> Rechazada: Comisión rechaza
-    Aprobada --> [*]
-    Rechazada --> [*]
+    [*] --> Presentada: Estudiante
+    Presentada --> VerificacionDocumental: Admisión recibe
+    VerificacionDocumental --> Observada: Admisión observa
+    Observada --> PendienteSubsanacion: Admisión devuelve
+    PendienteSubsanacion --> Subsanada: Estudiante corrige documentos
+    Subsanada --> VerificacionDocumental: Admisión verifica corrección
+    VerificacionDocumental --> EvaluacionAcademica: Admisión deriva
+    EvaluacionAcademica --> Observada: Director solicita corrección documental
+    EvaluacionAcademica --> DictamenEmitido: Director evalúa todos los cursos y emite
+    DictamenEmitido --> RevisionDecanal: Director remite
+    RevisionDecanal --> EvaluacionAcademica: Decano devuelve con sustento
+    RevisionDecanal --> DictamenAprobado: Decano aprueba el dictamen
+    DictamenAprobado --> ResolucionEmitida: Decano emite resolución ficticia
+    ResolucionEmitida --> NotificacionRealizada: Decano notifica
+    NotificacionRealizada --> RegistroAcademicoPendiente: Decano remite
+    RegistroAcademicoPendiente --> RegistroAcademicoPendiente: Registros confirma carga parcial o total
+    RegistroAcademicoPendiente --> Finalizada: Registros finaliza
+    Finalizada --> [*]
 ```
 
-Reglas **didácticas**, no normativa oficial de la USMP: nota mínima 11/20, coincidencia mínima de 80% y créditos de origen iguales o superiores a los del destino. El registro admite solicitudes con criterios insuficientes para demostrar la evaluación y rechazo. La coincidencia se ingresa como dato simulado; no se calcula a partir de un sílabo.
+Reglas **didácticas**, no normativa oficial de la USMP: nota mínima 11/20 y créditos de origen suficientes. Coincidencia referencial de 80%, o excepción desde 70% por afinidad temática directa justificada y créditos equivalentes. El Director registra la coincidencia y decide manualmente aprobar, rechazar u observar: ningún porcentaje aprueba automáticamente. Se pueden registrar cursos con criterios insuficientes para demostrar su evaluación y rechazo.
 
-Alcance: una asignatura por expediente; lista documental simulada, sin carga de archivos; subsanación mediante comentario, sin edición de notas o créditos; decisiones finales inmutables desde la interfaz. Los expedientes, comentarios y perfiles pertenecen a la sesión de cada navegador. La bandeja muestra las 100 solicitudes más recientes de esa sesión que cumplen el filtro.
+Alcance: varias asignaturas por expediente; documentos ficticios seleccionables, sin carga física; historial de correcciones y evaluaciones; dictámenes versionados y resolución consultable con advertencia de demostración. Los expedientes de la versión anterior se conservan para consulta con su autoría original. La bandeja muestra hasta 100 expedientes de la sesión y permite filtrar por estado, pendientes del perfil, dictamen y resolución.
 
 ## Organización
 
@@ -62,6 +73,9 @@ src/Convalidacion.Web/
 tests/Convalidacion.Tests/
   SolicitudServiceTests.cs   Reglas del proceso con SQLite real en memoria
   WebTests.cs                Integración HTTP con MVC, cookies y antiforgery
+  MigrationTests.cs          Conservación de datos anteriores y persistencia
+tests/browser/
+  flujo-convalidacion.mjs    Recorrido real de los cinco perfiles mediante Chrome DevTools
 ```
 
 Se usa directamente EF Core desde servicios y consultas MVC, sin repositorios genéricos ni capas adicionales. Cada cambio guarda estado e historial en la misma operación transaccional. Un token de concurrencia impide sobrescribir una revisión más reciente. Los filtros globales de EF Core aíslan solicitudes e historial mediante una clave aleatoria generada en el servidor y guardada en sesión. No se acepta esa clave desde formularios o parámetros. El perfil simulado no constituye autenticación ni un control de acceso para expedientes reales.
@@ -139,3 +153,5 @@ El destino debe ser exactamente `https://github.com/jodach34/DEMO-LUCIANA.git`. 
 ## Verificación de la implementación
 
 Consulta [docs/VERIFICACION.md](docs/VERIFICACION.md) para los resultados observados y las limitaciones. La existencia del workflow no demuestra que GitHub Actions haya ejecutado los checks: debe verificarse tras publicar el repositorio.
+
+El [informe del Bloque 2](docs/BLOQUE-2-FLUJO-CONVALIDACION.md) documenta los perfiles, transiciones, migración aditiva, pruebas y revisión local. Su implementación está en `feature/flujo-convalidacion`, creada desde `develop` después de integrar el rediseño del Bloque 1. No se desplegó ni se fusionó el Bloque 2 con `main`.

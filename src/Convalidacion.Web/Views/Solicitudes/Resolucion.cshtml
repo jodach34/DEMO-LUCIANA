@@ -1,0 +1,12 @@
+@model ResolucionDecanal
+@{ ViewData["Title"] = Model.Numero; }
+<a asp-action="Detalle" asp-route-id="@Model.SolicitudId" class="back-link">← Volver al expediente</a>
+<section class="panel mt-4 academic-document">
+    <p class="eyebrow">ETAPA 3 / APROBACIÓN OFICIAL Y EMISIÓN DE RESOLUCIÓN</p><h1>Resolución Decanal simulada</h1>
+    <p class="demo-document-warning">DOCUMENTO ACADÉMICO DE DEMOSTRACIÓN — SIN VALIDEZ OFICIAL.</p>
+    <dl class="row detail-list mt-4"><dt class="col-md-3">Número ficticio</dt><dd class="col-md-9">@Model.Numero</dd><dt class="col-md-3">Fecha ficticia</dt><dd class="col-md-9">@Model.FechaDocumento.ToString("dd/MM/yyyy")</dd><dt class="col-md-3">Estudiante ficticio</dt><dd class="col-md-9">@Model.Solicitud.Estudiante</dd><dt class="col-md-3">Expediente</dt><dd class="col-md-9">@Model.Solicitud.Codigo</dd><dt class="col-md-3">Responsable simulado</dt><dd class="col-md-9">Decano</dd><dt class="col-md-3">Emisión registrada</dt><dd class="col-md-9">@Model.EmitidaUtc.HoraPeru()</dd><dt class="col-md-3">Decisión</dt><dd class="col-md-9"><strong>@Model.Decision</strong></dd></dl>
+    <partial name="_ResultadosDictamen" model="Model.Detalles" />
+    <h2 class="mt-4">Sustento de la resolución</h2><p class="preserve-lines">@Model.Justificacion</p>
+    <p class="small text-secondary">Las asignaturas rechazadas quedan excluidas de la carga académica simulada. Aprobar el dictamen no cambia los resultados individuales.</p>
+    <p class="small text-secondary mb-0">Documento ficticio sin firma digital, PDF ni conexión con plataformas universitarias reales.</p>
+</section>
