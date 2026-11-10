@@ -134,7 +134,7 @@ git status --short --branch
 
 El destino debe ser exactamente `https://github.com/jodach34/DEMO-LUCIANA.git`. Si aparecen commits remotos, intégralos sin sobrescribir el historial. La publicación y las protecciones de rama necesitan acceso a la cuenta de GitHub; no están implícitas en los archivos locales.
 
-`.github/workflows/ci.yml` restaura en modo bloqueado, compila Release con advertencias como errores, ejecuta las pruebas si hay proyectos de prueba, revisa migraciones y conserva resultados TRX. Otro job construye Docker y prueba `/health` y `/` usando `PORT=10000`.
+`.github/workflows/ci.yml` restaura en modo bloqueado, compila Release con advertencias como errores, ejecuta las pruebas si hay proyectos de prueba, revisa migraciones y conserva resultados TRX. Otro job construye Docker y prueba `/health` y `/` usando `PORT=10000`. También se puede iniciar desde **Actions → .NET y Docker → Run workflow**, seleccionando la rama que se desea comprobar.
 
 ## Verificación de la implementación
 

@@ -1,6 +1,7 @@
 name: .NET y Docker
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, develop, 'feature/**', 'fix/**']
   pull_request:
