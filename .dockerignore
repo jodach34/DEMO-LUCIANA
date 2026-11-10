@@ -1,0 +1,14 @@
+.git
+.github
+**/bin
+**/obj
+**/App_Data
+**/*.db*
+**/TestResults
+TestResults
+tests
+artifacts
+.env*
+**/appsettings.Local.json
+.vs
+.vscode

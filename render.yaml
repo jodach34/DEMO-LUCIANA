@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: fia-epics-convalidaciones-demo
+    runtime: docker
+    repo: https://github.com/jodach34/DEMO-LUCIANA
+    branch: main
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        value: Data Source=/tmp/convalidacion/convalidacion.db
+      - key: Demo__SeedData
+        value: "true"

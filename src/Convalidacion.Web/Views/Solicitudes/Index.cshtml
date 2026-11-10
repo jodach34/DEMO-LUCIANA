@@ -1,0 +1,12 @@
+@model BandejaViewModel
+@{ ViewData["Title"] = "Solicitudes"; }
+<div class="section-heading mb-4"><div><p class="eyebrow">SEGUIMIENTO DEL PROCESO</p><h1>Solicitudes de convalidación</h1><p class="text-secondary mb-0">Consulta expedientes ficticios, su estado y el historial de atención.</p></div><a class="btn btn-primary" asp-action="Crear">+ Nueva solicitud</a></div>
+<section class="panel">
+    <form method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-md-6"><label for="buscar" class="form-label">Buscar estudiante, asignatura o número de expediente</label><input id="buscar" name="buscar" value="@Model.Buscar" maxlength="120" class="form-control" placeholder="Ej. Demo 001, Base de datos o 1" /></div>
+        <div class="col-md-3"><label for="estado" class="form-label">Estado</label><select id="estado" name="estado" class="form-select"><option value="">Todos los estados</option>@foreach (var estado in Enum.GetValues<EstadoSolicitud>()) { <option value="@estado" selected="@(Model.Estado == estado)">@estado.Texto()</option> }</select></div>
+        <div class="col-md-3 d-flex gap-2"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-outline-secondary" asp-action="Index">Limpiar</a></div>
+    </form>
+    <p class="small text-secondary">@Model.Solicitudes.Count resultado(s). Se muestran hasta 100 solicitudes, de la más reciente a la más antigua.</p>
+    <partial name="_SolicitudesTabla" model="Model.Solicitudes" />
+</section>
