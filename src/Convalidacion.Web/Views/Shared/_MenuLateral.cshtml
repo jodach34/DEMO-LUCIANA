@@ -1,0 +1,33 @@
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var estado = Context.Request.Query["estado"].ToString();
+    var inicio = controller == "Home" && action == "Index";
+    var nueva = controller == "Solicitudes" && action == "Crear";
+    var bandeja = controller == "Solicitudes" && action is "Index" or "Detalle";
+    var acerca = controller == "Home" && action == "Privacy";
+    var pendiente = Perfiles.Actual switch { PerfilDemo.Secretaria => EstadoSolicitud.Recibida, PerfilDemo.Comision => EstadoSolicitud.EnRevision, _ => EstadoSolicitud.Observada };
+    var etiqueta = Perfiles.Actual switch { PerfilDemo.Secretaria => "Por verificar", PerfilDemo.Comision => "Por evaluar", _ => "Por subsanar" };
+    var bandejaGeneral = bandeja && estado != pendiente.ToString();
+}
+<aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="menuLateral" aria-labelledby="nombrePlataforma">
+    <div class="sidebar-brand">
+        <a class="logo-frame" asp-controller="Home" asp-action="Index" aria-label="USMP · Ir al inicio"><img src="~/images/usmp-logo.jpg" alt="USMP · Universidad de San Martín de Porres" width="2412" height="933" /></a>
+        <div class="platform-name" id="nombrePlataforma">Plataforma de<br /><strong>Convalidaciones</strong></div>
+        <button type="button" class="sidebar-close d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#menuLateral" aria-label="Cerrar menú">×</button>
+    </div>
+    <nav class="sidebar-nav" aria-label="Navegación principal">
+        <a class="sidebar-link @(inicio ? "active" : "")" aria-current="@(inicio ? "page" : null)" asp-controller="Home" asp-action="Index"><partial name="_Icon" model='@("home")' /><span>Inicio</span></a>
+        <div class="sidebar-group"><partial name="_Icon" model='@("layers")' /><span>Convalidación</span><partial name="_Icon" model='@("chevron-down")' /></div>
+        <div class="sidebar-subnav">
+            @if (Perfiles.Actual == PerfilDemo.Estudiante)
+            { <a class="sidebar-link @(nueva ? "active" : "")" aria-current="@(nueva ? "page" : null)" asp-controller="Solicitudes" asp-action="Crear"><partial name="_Icon" model='@("file-plus")' /><span>Nueva solicitud</span></a> }
+            <a class="sidebar-link @(bandejaGeneral ? "active" : "")" aria-current="@(bandejaGeneral ? "page" : null)" asp-controller="Solicitudes" asp-action="Index"><partial name="_Icon" model='@("file")' /><span>@(Perfiles.Actual == PerfilDemo.Estudiante ? "Mis solicitudes" : "Solicitudes")</span></a>
+            <a class="sidebar-link @(bandeja && estado == pendiente.ToString() ? "active" : "")" aria-current="@(bandeja && estado == pendiente.ToString() ? "page" : null)" asp-controller="Solicitudes" asp-action="Index" asp-route-estado="@pendiente"><partial name="_Icon" model='@("clipboard")' /><span>@etiqueta</span></a>
+        </div>
+        <div class="sidebar-divider"></div>
+        <a class="sidebar-link @(acerca ? "active" : "")" aria-current="@(acerca ? "page" : null)" asp-controller="Home" asp-action="Privacy"><partial name="_Icon" model='@("help")' /><span>Acerca de la demo</span></a>
+    </nav>
+    <div class="sidebar-bottom"><span class="demo-label">DEMO ACADÉMICA</span><span>Gestión de Procesos · FIA–EPICS</span></div>
+</aside>

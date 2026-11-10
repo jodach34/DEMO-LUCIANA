@@ -2,7 +2,7 @@
 @using Convalidacion.Web.Services
 @{ ViewData["Title"] = Model.Solicitud.Codigo; var s = Model.Solicitud; var acciones = SolicitudService.Acciones(s.Estado, Model.Perfil); }
 <a asp-action="Index" class="back-link">← Volver a solicitudes</a>
-<div class="section-heading mt-4 mb-4"><div><p class="eyebrow">EXPEDIENTE ACADÉMICO SIMULADO</p><h1>@s.Codigo</h1><p class="text-secondary mb-0">Registrado el @s.CreadaUtc.ToString("dd/MM/yyyy HH:mm") UTC · Perfil: @Model.Perfil.Texto()</p></div><span class="status status-@s.Estado">@s.Estado.Texto()</span></div>
+<div class="section-heading mt-4 mb-4"><div><p class="eyebrow">EXPEDIENTE ACADÉMICO SIMULADO</p><h1>@s.Codigo</h1><p class="text-secondary mb-0">Registrado el @s.CreadaUtc.ToString("dd/MM/yyyy HH:mm") UTC · Perfil: @Model.Perfil.Texto()</p></div><partial name="_EstadoSolicitud" model="s.Estado" /></div>
 <div class="row g-4"><div class="col-lg-8">
     <section class="panel mb-4"><h2>Información de la solicitud</h2><dl class="row detail-list mt-4">
         <dt class="col-sm-4">Estudiante ficticio</dt><dd class="col-sm-8">@s.Estudiante</dd>

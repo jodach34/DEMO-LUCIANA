@@ -1,0 +1,20 @@
+@model IReadOnlyList<Solicitud>
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{ var activa = Model.FirstOrDefault(s => s.Estado is not (EstadoSolicitud.Aprobada or EstadoSolicitud.Rechazada)); }
+<section class="panel active-request" aria-labelledby="tituloSolicitudActiva">
+    <div class="section-heading"><h2 id="tituloSolicitudActiva">@(Perfiles.Actual == PerfilDemo.Estudiante ? "Mi solicitud activa" : "Solicitud en seguimiento")</h2>
+        @if (activa is not null) { <a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@activa.Id" aria-label="Ver solicitud @activa.Codigo"><partial name="_Icon" model='@("chevron-right")' /></a> }
+    </div>
+    @if (activa is not null)
+    {
+        <div class="active-request-summary">
+            <span class="request-icon"><partial name="_Icon" model='@("file")' /></span>
+            <div><h3>@activa.Codigo</h3><p>Estado: <partial name="_EstadoSolicitud" model="activa.Estado" /></p><p>Fecha de registro: <strong>@activa.CreadaUtc.ToString("dd/MM/yyyy")</strong> <small>UTC</small></p></div>
+        </div>
+        <p class="active-subject">@activa.Asignatura.Nombre</p>
+        <a class="request-followup" asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@activa.Id">Consultar seguimiento <span aria-hidden="true">→</span></a>
+    }
+    else
+    { <p class="text-secondary mb-2">No hay solicitudes activas entre los expedientes recientes.</p><a asp-controller="Solicitudes" asp-action="Index">Consultar todas las solicitudes →</a> }
+    <small class="recent-scope">Resumen de los últimos @Model.Count expediente(s) de tu sesión.</small>
+</section>

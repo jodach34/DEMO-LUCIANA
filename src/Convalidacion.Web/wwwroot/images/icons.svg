@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+  <symbol id="home" viewBox="0 0 24 24"><path d="m3 10 9-8 9 8v11h-6v-8H9v8H3Z"/><path d="M1 11 12 1l11 10"/></symbol>
+  <symbol id="layers" viewBox="0 0 24 24"><path d="m2 7 10-5 10 5-10 5Zm0 5 10 5 10-5M2 17l10 5 10-5"/></symbol>
+  <symbol id="file" viewBox="0 0 24 24"><path d="M5 2h9l5 5v15H5Zm9 0v6h5M8 12h8M8 16h8"/></symbol>
+  <symbol id="file-plus" viewBox="0 0 24 24"><path d="M5 2h9l5 5v15H5Zm9 0v6h5M8 14h8m-4-4v8"/></symbol>
+  <symbol id="search-file" viewBox="0 0 24 24"><path d="M12 22H4V2h9l5 5v4M13 2v6h5"/><circle cx="16" cy="16" r="4"/><path d="m19 19 3 3"/></symbol>
+  <symbol id="clipboard" viewBox="0 0 24 24"><path d="M8 4H4v18h16V4h-4M8 2h8v5H8Zm0 12 3 3 5-6"/></symbol>
+  <symbol id="book" viewBox="0 0 24 24"><path d="M12 5C8 2 5 2 1 3v17c4-1 7-1 11 2 4-3 7-3 11-2V3c-4-1-7-1-11 2Zm0 0v17"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="6" r="3"/><path d="M2 21v-4a7 7 0 0 1 14 0v4Zm14-19a3 3 0 1 1 1 6m2 3c3 1 3 4 3 6v4h-3"/></symbol>
+  <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="m4 12 5 6L21 5"/></symbol>
+  <symbol id="check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/></symbol>
+  <symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 8a3 3 0 0 1 6 0c0 3-3 2-3 6m0 3h.01"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M4 17h16l-2-4V8a6 6 0 0 0-12 0v5Zm5 3a3 3 0 0 0 6 0M12 1v1"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="m15 15 7 7"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+  <symbol id="chevron-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="chevron-down" viewBox="0 0 24 24"><path d="m5 9 7 7 7-7"/></symbol>
+  <symbol id="menu" viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18"/></symbol>
+  <symbol id="chart" viewBox="0 0 24 24"><path d="M3 21V11m6 10v-6m6 6V9m6 12V3M2 8l6-5 6 3 7-5m-6 0h6v6"/></symbol>
+</svg>
