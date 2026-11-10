@@ -1,5 +1,6 @@
 using Convalidacion.Web.Data;
 using Convalidacion.Web.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,14 @@ builder.Logging.AddSimpleConsole(options => { options.SingleLine = true; options
 if (int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var port))
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    options.Filters.Add<DemoSessionFilter>();
+});
 builder.Services.AddHttpContextAccessor();
+// Una única instancia de demo: las sesiones y sus claves caducan al reiniciar el proceso.
+builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

@@ -155,6 +155,6 @@ public class SolicitudServiceTests : IAsyncLifetime
         Assert.Equal(6, await db.Solicitudes.CountAsync());
         Assert.Equal(4, await db.Asignaturas.CountAsync());
         Assert.NotNull(await db.Solicitudes.FindAsync(id));
-        Assert.Single(await db.Database.GetAppliedMigrationsAsync());
+        Assert.Equal(2, (await db.Database.GetAppliedMigrationsAsync()).Count());
     }
 }

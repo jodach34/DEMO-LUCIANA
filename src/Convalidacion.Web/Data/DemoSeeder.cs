@@ -17,6 +17,10 @@ public static class DemoSeeder
                 new() { Id = 3, Codigo = "DEMO-103", Nombre = "Gestión de procesos", Creditos = 3 },
                 new() { Id = 4, Codigo = "DEMO-104", Nombre = "Ingeniería de software", Creditos = 4 });
             await db.SaveChangesAsync();
+        }
+        // Cada navegador recibe su propia copia de los expedientes ficticios.
+        if (!await db.Solicitudes.AnyAsync())
+        {
             var fecha = new DateTime(2026, 11, 1, 15, 0, 0, DateTimeKind.Utc);
             foreach (var estado in Enum.GetValues<EstadoSolicitud>())
             {
@@ -34,7 +38,7 @@ public static class DemoSeeder
                             EstadoSolicitud.Aprobada => "Equivalencia aceptada según los criterios didácticos.",
                             _ => "Coincidencia de contenidos insuficiente para la demo."
                         } });
-                db.Solicitudes.Add(new() { Estudiante = $"Estudiante Demo {index + 1:D3}",
+                db.Solicitudes.Add(new() { AmbitoDemo = db.AmbitoActual, Estudiante = $"Estudiante Demo {index + 1:D3}",
                     InstitucionOrigen = "Universidad Ficticia de Ejemplo", AsignaturaOrigen = "Curso de origen simulado",
                     AsignaturaId = index % 4 + 1, CreditosOrigen = 4, Nota = 16,
                     Coincidencia = estado == EstadoSolicitud.Rechazada ? 60 : 90, Estado = estado,

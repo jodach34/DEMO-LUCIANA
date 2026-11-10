@@ -83,6 +83,11 @@ namespace Convalidacion.Web.Data.Migrations
                     b.Property<DateTime>("ActualizadaUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AmbitoDemo")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("AsignaturaId")
                         .HasColumnType("INTEGER");
 
@@ -122,6 +127,8 @@ namespace Convalidacion.Web.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AmbitoDemo");
+
                     b.HasIndex("AsignaturaId");
 
                     b.HasIndex("Estado");
@@ -131,11 +138,13 @@ namespace Convalidacion.Web.Data.Migrations
 
             modelBuilder.Entity("Convalidacion.Web.Models.Seguimiento", b =>
                 {
-                    b.HasOne("Convalidacion.Web.Models.Solicitud", null)
+                    b.HasOne("Convalidacion.Web.Models.Solicitud", "Solicitud")
                         .WithMany("Historial")
                         .HasForeignKey("SolicitudId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Solicitud");
                 });
 
             modelBuilder.Entity("Convalidacion.Web.Models.Solicitud", b =>

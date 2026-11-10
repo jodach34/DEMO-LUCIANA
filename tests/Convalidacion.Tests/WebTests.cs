@@ -47,11 +47,17 @@ public class WebTests
         return await client.PostAsync(url, new FormUrlEncodedContent(fields));
     }
 
+    private static string DetalleUrl(string html)
+    {
+        var match = Regex.Match(html, "href=\"(/Solicitudes/Detalle/[0-9]+)\"");
+        Assert.True(match.Success, "La bandeja no contiene expedientes de ejemplo.");
+        return match.Groups[1].Value;
+    }
+
     [Theory]
     [InlineData("/")]
     [InlineData("/Solicitudes")]
     [InlineData("/Solicitudes/Crear")]
-    [InlineData("/Solicitudes/Detalle/1")]
     [InlineData("/Home/Privacy")]
     [InlineData("/health")]
     [InlineData("/css/site.css")]
@@ -87,7 +93,7 @@ public class WebTests
         Assert.Contains("status-Aprobada", html);
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var solicitud = await db.Solicitudes.Include(s => s.Historial).SingleAsync(s => s.Estudiante == "Estudiante Demo HTTP");
+        var solicitud = await db.Solicitudes.IgnoreQueryFilters().Include(s => s.Historial).SingleAsync(s => s.Estudiante == "Estudiante Demo HTTP");
         Assert.Equal(EstadoSolicitud.Aprobada, solicitud.Estado);
         Assert.Equal(3, solicitud.Historial.Count);
     }
@@ -137,5 +143,53 @@ public class WebTests
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/Solicitudes/Detalle/99999")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/ruta-inexistente")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/Solicitudes?estado=999")).StatusCode);
+    }
+
+    [Fact]
+    public async Task EjemplosPersistenEnLaMismaSesion()
+    {
+        using var factory = new DemoFactory(); using var client = Client(factory);
+        var html = await client.GetStringAsync("/Solicitudes");
+        var url = DetalleUrl(html);
+        var response = await client.GetAsync(url);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(response.Headers.CacheControl?.NoStore);
+        Assert.Equal(url, DetalleUrl(await client.GetStringAsync("/Solicitudes")));
+    }
+
+    [Fact]
+    public async Task DosNavegadoresNoCompartenSolicitudesComentariosNiPermitenCambiosCruzados()
+    {
+        using var factory = new DemoFactory(); using var first = Client(factory); using var second = Client(factory);
+        var html = await first.GetStringAsync("/Solicitudes/Crear");
+        var crear = await Post(first, "/Solicitudes/Crear", html, ("Estudiante", "Estudiante Demo Visitante A"),
+            ("InstitucionOrigen", "Instituto Ficticio A"), ("AsignaturaOrigen", "Curso ficticio A"),
+            ("AsignaturaId", "1"), ("CreditosOrigen", "4"), ("Nota", "16"), ("Coincidencia", "90"),
+            ("Certificado", "true"), ("Silabo", "true"));
+        Assert.Equal(HttpStatusCode.Redirect, crear.StatusCode);
+        var location = crear.Headers.Location!.ToString();
+        html = await first.GetStringAsync(location);
+        await Post(first, "/Perfiles/Cambiar", html, ("perfil", "Secretaria"));
+        html = await first.GetStringAsync(location);
+        await Post(first, "/Solicitudes/Ejecutar", html, ("Id", Input(html, "Id")), ("Revision", Input(html, "Revision")),
+            ("Accion", "Observar"), ("Comentario", "Comentario exclusivo del visitante A."));
+        html = await first.GetStringAsync(location);
+        Assert.Contains("Comentario exclusivo del visitante A.", html);
+        await Post(first, "/Perfiles/Cambiar", html, ("perfil", "Estudiante"));
+        html = await first.GetStringAsync(location);
+        var revision = Input(html, "Revision");
+        var id = Input(html, "Id");
+        var other = await second.GetStringAsync("/Solicitudes");
+        Assert.DoesNotContain("Estudiante Demo Visitante A", other);
+        Assert.DoesNotContain("Comentario exclusivo del visitante A.", other);
+        Assert.NotEqual(location, DetalleUrl(other));
+        Assert.Equal(HttpStatusCode.NotFound, (await second.GetAsync(location)).StatusCode);
+        // Incluso conociendo el identificador y revisión, el ámbito del servidor impide modificarlo.
+        var intento = await Post(second, "/Solicitudes/Ejecutar", other, ("Id", id), ("Revision", revision),
+            ("Accion", "Subsanar"), ("Comentario", "Intento cruzado del visitante B."));
+        Assert.Equal(HttpStatusCode.NotFound, intento.StatusCode);
+        html = await first.GetStringAsync(location);
+        Assert.Contains("status-Observada", html);
+        Assert.DoesNotContain("Intento cruzado del visitante B.", html);
     }
 }
