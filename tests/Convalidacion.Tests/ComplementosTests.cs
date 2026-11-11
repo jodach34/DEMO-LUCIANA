@@ -61,7 +61,10 @@ public class ComplementosTests : IAsyncLifetime
         Assert.Equal("Algoritmos y programación", Assert.Single(model.Catalogo).Nombre);
         Assert.Equal(ResultadoAcademico.Aprobada, model.Expediente!.Cursos.Single(c => c.AsignaturaId == 1).Resultado);
         Assert.Empty((await service.EquivalenciasAsync("DEMO-101", 3, null)).Catalogo);
+        Assert.Equal("DEMO-103", Assert.Single((await service.EquivalenciasAsync("DEMO-103", 3, null)).Catalogo).Codigo);
         await Assert.ThrowsAsync<ReglaProcesoException>(() => service.EquivalenciasAsync(null, null, 9999));
+        await using var ajeno = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options, Accesor("otra-sesion"));
+        await Assert.ThrowsAsync<ReglaProcesoException>(() => new ComplementosService(ajeno, new RelojFijo()).EquivalenciasAsync(null, null, finalizado.Id));
     }
 
     [Fact]
