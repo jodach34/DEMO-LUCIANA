@@ -1,0 +1,15 @@
+@model DetalleViewModel
+@{ var s = Model.Solicitud; var intento = Model.Subsanacion; }
+<p class="small text-secondary">Selecciona al menos un documento corregido. Conservaremos la referencia anterior, la nueva y tu justificación.</p>
+<form asp-controller="Solicitudes" asp-action="Subsanar" method="post" data-submit-once>
+    <input type="hidden" name="Id" value="@s.Id" /><input type="hidden" name="Revision" value="@Model.Accion.Revision" />
+    <label for="CertificadoCorregido" class="form-label">Certificado simulado</label><select id="CertificadoCorregido" name="CertificadoDocumento" class="form-select mb-3" required>@foreach(var d in DocumentosDemo.Certificados) { <option value="@d.Key" selected="@((intento?.CertificadoDocumento ?? s.CertificadoDocumento) == d.Key)">@d.Value</option> }</select>
+    @for(var i = 0; i < s.Cursos.Count; i++)
+    {
+        var curso = s.Cursos[i]; var documento = intento?.Cursos.FirstOrDefault(c => c.AsignaturaSolicitudId == curso.Id)?.SilaboDocumento ?? curso.SilaboDocumento;
+        <input type="hidden" name="Cursos[@i].AsignaturaSolicitudId" value="@curso.Id" />
+        <label for="CorreccionSilabo-@curso.Id" class="form-label">Sílabo: @curso.AsignaturaOrigen</label><select id="CorreccionSilabo-@curso.Id" name="Cursos[@i].SilaboDocumento" class="form-select mb-3" required>@foreach(var d in DocumentosDemo.Silabos) { <option value="@d.Key" selected="@(documento == d.Key)">@d.Value</option> }</select>
+    }
+    <label for="ComentarioSubsanacion" class="form-label">Justificación de las correcciones</label><textarea id="ComentarioSubsanacion" name="Comentario" class="form-control mb-3" required minlength="5" maxlength="1000" rows="4">@intento?.Comentario</textarea>
+    <button type="submit" class="btn btn-primary w-100">Enviar subsanación</button>
+</form>

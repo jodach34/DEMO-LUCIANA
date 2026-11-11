@@ -1,41 +1,85 @@
 @model DetalleViewModel
 @using Convalidacion.Web.Services
-@{ ViewData["Title"] = Model.Solicitud.Codigo; var s = Model.Solicitud; var acciones = SolicitudService.Acciones(s.Estado, Model.Perfil); }
+@{ ViewData["Title"] = Model.Solicitud.Codigo; var s = Model.Solicitud; var acciones = SolicitudService.Acciones(s, Model.Perfil).Where(a => a != AccionSolicitud.Subsanar).ToArray(); }
 <a asp-action="Index" class="back-link">← Volver a solicitudes</a>
-<div class="section-heading mt-4 mb-4"><div><p class="eyebrow">EXPEDIENTE ACADÉMICO SIMULADO</p><h1>@s.Codigo</h1><p class="text-secondary mb-0">Registrado el @s.CreadaUtc.ToString("dd/MM/yyyy HH:mm") UTC · Perfil: @Model.Perfil.Texto()</p></div><span class="status status-@s.Estado">@s.Estado.Texto()</span></div>
-<div class="row g-4"><div class="col-lg-8">
-    <section class="panel mb-4"><h2>Información de la solicitud</h2><dl class="row detail-list mt-4">
+<div class="section-heading mt-4 mb-4"><div><p class="eyebrow">EXPEDIENTE ACADÉMICO SIMULADO</p><h1>@s.Codigo</h1><p class="text-secondary mb-0">Registrado el @s.CreadaUtc.HoraPeru() · @Model.Perfil.Texto()</p></div><partial name="_EstadoSolicitud" model="s.Estado" /></div>
+@if (s.VersionProceso != 2)
+{ <div class="alert alert-info">Expediente de la versión anterior, conservado para consulta histórica. Su autoría y sus datos originales no se reinterpretan con los nuevos perfiles. Para recorrer el nuevo proceso, presenta un expediente nuevo.</div> }
+else { <partial name="_EtapasProceso" model="s" /> }
+<div asp-validation-summary="All" class="text-danger mt-3" role="alert"></div>
+<div class="row g-4 mt-1"><div class="col-xl-8">
+    <section class="panel mb-4"><h2>Información del expediente</h2><dl class="row detail-list mt-4 mb-0">
         <dt class="col-sm-4">Estudiante ficticio</dt><dd class="col-sm-8">@s.Estudiante</dd>
         <dt class="col-sm-4">Institución de origen</dt><dd class="col-sm-8">@s.InstitucionOrigen</dd>
-        <dt class="col-sm-4">Asignatura de origen</dt><dd class="col-sm-8">@s.AsignaturaOrigen</dd>
-        <dt class="col-sm-4">Asignatura de destino</dt><dd class="col-sm-8">@s.Asignatura.Codigo · @s.Asignatura.Nombre</dd>
-        <dt class="col-sm-4">Documentos</dt><dd class="col-sm-8">Certificado y sílabo confirmados (simulados)</dd>
-    </dl><div class="criteria-grid">
-        <div><span>Nota obtenida</span><strong>@s.Nota / 20</strong><small>Mínimo demo: 11</small></div>
-        <div><span>Créditos de origen</span><strong>@s.CreditosOrigen</strong><small>Destino: @s.Asignatura.Creditos</small></div>
-        <div><span>Coincidencia</span><strong>@s.Coincidencia%</strong><small>Mínimo demo: 80%</small></div>
-    </div><p class="small mt-3 mb-0 text-secondary">@(SolicitudService.CumpleCriterios(s) ? "Cumple los criterios orientativos de la demo. La decisión requiere evaluación de la comisión." : "No cumple los criterios orientativos de la demo. La aprobación está deshabilitada por las reglas del proceso.")</p></section>
-    <section class="panel"><h2>Historial del expediente</h2><p class="text-secondary small">Cada cambio conserva el perfil simulado, la fecha y el sustento. Horas en UTC.</p><ol class="timeline">
-        @foreach (var evento in s.Historial.OrderBy(h => h.FechaUtc).ThenBy(h => h.Id))
-        { <li><div class="d-flex justify-content-between flex-wrap gap-2"><strong>@evento.Estado.Texto()</strong><time class="small text-secondary">@evento.FechaUtc.ToString("dd/MM/yyyy HH:mm") UTC</time></div><span class="small text-secondary">@evento.Perfil.Texto()</span><p>@evento.Comentario</p></li> }
-    </ol></section>
-</div><aside class="col-lg-4"><section class="panel action-panel"><p class="eyebrow">SIGUIENTE PASO</p><h2>Atender solicitud</h2>
-    <div asp-validation-summary="All" class="text-danger" role="alert"></div>
-    @if (acciones.Length > 0)
+        <dt class="col-sm-4">Certificado simulado</dt><dd class="col-sm-8">@(DocumentosDemo.Certificados.GetValueOrDefault(s.CertificadoDocumento) ?? "No registrado en la versión anterior") <small>@s.CertificadoDocumento</small></dd>
+        <dt class="col-sm-4">Verificación documental</dt><dd class="col-sm-8">@(s.DocumentosVerificadosUtc?.HoraPeru() ?? "Pendiente de confirmación")</dd>
+    </dl></section>
+    <section class="panel mb-4"><div class="section-heading"><h2>Asignaturas del expediente</h2><span class="small text-secondary">@s.Cursos.Count asignatura(s)</span></div>
+        <p class="small text-secondary">Catálogo ficticio de demostración. La aprobación de un dictamen admite resultados parciales.</p>
+        @foreach (var curso in s.Cursos.OrderBy(c => c.Id))
+        {
+            <article class="course-detail" id="curso-@curso.Id">
+                <div class="section-heading"><h3>@curso.AsignaturaOrigen → @curso.Asignatura.Nombre</h3><span class="status result-@curso.Resultado">@curso.Resultado</span></div>
+                <div class="criteria-grid mb-3"><div><span>Créditos origen / destino</span><strong>@curso.CreditosOrigen / @curso.CreditosDestino</strong></div><div><span>Nota de origen</span><strong>@curso.Nota / 20</strong></div><div><span>Coincidencia evaluada</span><strong>@(curso.Coincidencia.HasValue ? $"{curso.Coincidencia}%" : "Pendiente")</strong></div></div>
+                <p class="small mb-2"><strong>Sílabo simulado:</strong> @(DocumentosDemo.Silabos.GetValueOrDefault(curso.SilaboDocumento) ?? "No registrado en la versión anterior") · @curso.SilaboDocumento · Versión @curso.VersionDocumento</p>
+                @if (curso.EvaluadaUtc.HasValue)
+                { <p class="small"><strong>Evaluación del Director:</strong> @curso.Justificacion<br /><span class="text-secondary">@curso.EvaluadaUtc.Value.HoraPeru()</span></p> }
+                @if (curso.ExcepcionAfinidad) { <p class="exception-note"><strong>Excepción por afinidad temática directa:</strong> @curso.JustificacionExcepcion</p> }
+                @if (curso.Registro is not null) { <p class="alert alert-success small">Carga académica simulada: @curso.Registro.Creditos créditos · @curso.Registro.FechaUtc.HoraPeru() · Registros Académicos.</p> }
+                @if (s.VersionProceso == 2 && s.Estado == EstadoSolicitud.EvaluacionAcademica && Model.Perfil == PerfilDemo.Director)
+                {
+                    var intento = Model.Evaluacion?.AsignaturaSolicitudId == curso.Id ? Model.Evaluacion : null;
+                    <form asp-action="Evaluar" method="post" class="evaluation-form" data-submit-once>
+                        <input type="hidden" name="Id" value="@s.Id" /><input type="hidden" name="Revision" value="@Model.Accion.Revision" /><input type="hidden" name="AsignaturaSolicitudId" value="@curso.Id" />
+                        <div class="row g-3"><div class="col-sm-5"><label class="form-label" for="Coincidencia-@curso.Id">Coincidencia de contenidos (%)</label><input id="Coincidencia-@curso.Id" name="Coincidencia" type="number" min="0" max="100" required value="@(intento?.Coincidencia ?? curso.Coincidencia)" class="form-control" /></div>
+                            <div class="col-sm-7"><label class="form-label" for="Resultado-@curso.Id">Decisión individual del Director</label><select id="Resultado-@curso.Id" name="Resultado" class="form-select" required><option value="">Selecciona un resultado</option>@foreach(var resultado in new[] { ResultadoAcademico.Aprobada, ResultadoAcademico.Rechazada, ResultadoAcademico.Observada }) { <option value="@resultado" selected="@((intento?.Resultado ?? curso.Resultado) == resultado)">@resultado</option> }</select></div>
+                        </div>
+                        <label class="form-label mt-3" for="Justificacion-@curso.Id">Justificación de la evaluación</label><textarea id="Justificacion-@curso.Id" name="Justificacion" class="form-control" rows="3" required minlength="5" maxlength="1000">@(intento?.Justificacion ?? curso.Justificacion)</textarea>
+                        <div class="form-check mt-3"><input type="checkbox" id="Excepcion-@curso.Id" name="ExcepcionAfinidad" value="true" checked="@(intento?.ExcepcionAfinidad ?? curso.ExcepcionAfinidad)" class="form-check-input" /><label for="Excepcion-@curso.Id" class="form-check-label">Excepción desde 70%: afinidad temática directa y créditos equivalentes</label></div>
+                        <label for="JustificacionExcepcion-@curso.Id" class="form-label mt-2">Justificación específica de la excepción, cuando corresponda</label><textarea id="JustificacionExcepcion-@curso.Id" name="JustificacionExcepcion" rows="2" maxlength="1000" class="form-control">@(intento?.JustificacionExcepcion ?? curso.JustificacionExcepcion)</textarea>
+                        <p class="small text-secondary mt-2">Criterios referenciales: nota mínima 11 y créditos suficientes. Ningún porcentaje aprueba automáticamente una asignatura.</p>
+                        <button type="submit" class="btn btn-primary">Guardar evaluación individual</button>
+                    </form>
+                }
+                @if (curso.Evaluaciones.Count > 0)
+                { <details class="mt-3"><summary class="small">Evaluaciones conservadas (@curso.Evaluaciones.Count)</summary>@foreach(var e in curso.Evaluaciones.OrderBy(e => e.FechaUtc).ThenBy(e => e.Id)) { <div class="evaluation-history"><strong>@e.Resultado · @e.Coincidencia% · Sílabo v@e.VersionDocumento</strong><p>@e.Justificacion</p>@if(e.ExcepcionAfinidad){ <p>Excepción: @e.JustificacionExcepcion</p> }<small>@e.Perfil.Texto() · @e.FechaUtc.HoraPeru()</small></div> }</details> }
+            </article>
+        }
+    </section>
+    @if (s.Dictamenes.Count > 0)
     {
-        <p class="small text-secondary">Actúas como @Model.Perfil.Texto(). Todo cambio requiere sustento.</p>
+        <section class="panel mb-4"><h2>Dictámenes académicos</h2><ul class="document-links">@foreach(var dictamen in s.Dictamenes.OrderByDescending(d => d.Version)) { <li><a asp-action="Dictamen" asp-route-id="@s.Id" asp-route-version="@dictamen.Version">@dictamen.Numero</a><span>@dictamen.Situacion · @dictamen.EmitidoUtc.HoraPeru()</span>@if(!string.IsNullOrEmpty(dictamen.ObservacionDecanal)){ <p>Observación del Decano: @dictamen.ObservacionDecanal</p> }</li> }</ul></section>
+    }
+    @if (s.Resolucion is not null)
+    { <section class="panel mb-4"><h2>Resolución Decanal simulada</h2><p class="demo-document-warning">DOCUMENTO ACADÉMICO DE DEMOSTRACIÓN — SIN VALIDEZ OFICIAL.</p><p>@s.Resolucion.Numero · @s.Resolucion.Decision</p><a class="btn btn-outline-primary" asp-action="Resolucion" asp-route-id="@s.Id">Consultar resolución</a></section> }
+    @if (s.Correcciones.Count > 0)
+    { <section class="panel mb-4"><h2>Historial de documentos corregidos</h2>@foreach(var c in s.Correcciones.OrderBy(c => c.FechaUtc).ThenBy(c => c.Id)) { <div class="evaluation-history"><strong>@(c.AsignaturaSolicitudId.HasValue ? $"Sílabo de asignatura #{c.AsignaturaSolicitudId}" : "Certificado")</strong><p>@c.Anterior → @c.Corregido</p><p>@c.Justificacion</p><small>@c.Perfil.Texto() · @c.FechaUtc.HoraPeru()</small></div> }</section> }
+    <section class="panel"><h2>Historial del expediente</h2><p class="text-secondary small">Acciones, responsables y transiciones. Fechas almacenadas en UTC y mostradas en hora de Perú.</p><ol class="timeline">
+        @foreach (var evento in s.Historial.OrderBy(h => h.FechaUtc).ThenBy(h => h.Id))
+        { <li><strong>@(evento.Accion?.Texto() ?? "Registro histórico de la versión anterior")</strong><p class="small">@(evento.EstadoAnterior?.Texto() ?? "Inicio / estado anterior no registrado") → @evento.Estado.Texto()</p><span class="small text-secondary">@evento.Responsable · @evento.FechaUtc.HoraPeru()</span><p>@evento.Comentario</p></li> }
+    </ol></section>
+</div><aside class="col-xl-4"><section class="panel action-panel"><p class="eyebrow">SIGUIENTE PASO</p><h2>Atender expediente</h2>
+    @if (s.VersionProceso == 2 && s.Estado == EstadoSolicitud.PendienteSubsanacion && Model.Perfil == PerfilDemo.Estudiante)
+    { <partial name="_Subsanacion" model="Model" /> }
+    else if (acciones.Length > 0)
+    {
+        <p class="small text-secondary">Actúas como @Model.Perfil.Texto(). Cada cambio requiere sustento.</p>
+        @if(s.Estado == EstadoSolicitud.EvaluacionAcademica) { <p class="small">Evalúa cada asignatura antes de emitir el dictamen. Si requiere corregir sílabos, registra la asignatura observada y solicita su corrección a través de Admisión.</p> }
+        @if(s.Estado == EstadoSolicitud.RegistroAcademicoPendiente) { <p class="small">Se registran exclusivamente las asignaturas aprobadas en la resolución. Las rechazadas se excluyen. Después de confirmar la carga, finaliza el expediente.</p> }
         <form asp-action="Ejecutar" method="post" data-submit-once>
             <input type="hidden" name="Id" value="@Model.Accion.Id" /><input type="hidden" name="Revision" value="@Model.Accion.Revision" />
-            <label for="Accion" class="form-label">Acción</label><select id="Accion" name="Accion" class="form-select mb-3">
-                @foreach (var accion in acciones) { <option value="@accion" selected="@(Model.Accion.Accion == accion)" disabled="@(accion == AccionSolicitud.Aprobar && !SolicitudService.CumpleCriterios(s))">@accion.Texto()</option> }
-            </select>
-            <label for="Comentario" class="form-label">Sustento / comentario</label><textarea id="Comentario" name="Comentario" class="form-control mb-3" rows="5" required minlength="5" maxlength="1000" placeholder="Describe la evaluación o subsanación simulada…">@Model.Accion.Comentario</textarea>
-            <button class="btn btn-primary w-100" type="submit">Registrar cambio</button>
+            <label for="Accion" class="form-label">Acción</label><select id="Accion" name="Accion" class="form-select mb-3">@foreach(var accion in acciones) { <option value="@accion" selected="@(Model.Accion.Accion == accion)">@accion.Texto()</option> }</select>
+            @if(Model.Perfil == PerfilDemo.Admision)
+            { <div class="form-check mb-3"><input type="checkbox" id="DocumentosVerificados" name="DocumentosVerificados" value="true" checked="@Model.Accion.DocumentosVerificados" class="form-check-input" /><label for="DocumentosVerificados" class="form-check-label">He verificado el certificado y todos los sílabos simulados, incluidas sus correcciones.</label></div> }
+            @if(acciones.Contains(AccionSolicitud.EmitirResolucion))
+            { <div class="mb-3"><label for="NumeroResolucion" class="form-label">Número ficticio (comienza con DEMO-)</label><input id="NumeroResolucion" name="NumeroResolucion" value="@Model.Accion.NumeroResolucion" required minlength="8" maxlength="60" pattern="DEMO-.{3,}" class="form-control" /><label for="FechaResolucion" class="form-label mt-3">Fecha ficticia de la resolución</label><input id="FechaResolucion" name="FechaResolucion" type="date" value="@Model.Accion.FechaResolucion?.ToString("yyyy-MM-dd")" required min="2000-01-01" max="2100-12-31" class="form-control" /></div> }
+            <label for="Comentario" class="form-label">Sustento / comentario</label><textarea id="Comentario" name="Comentario" class="form-control mb-3" rows="4" required minlength="5" maxlength="1000">@Model.Accion.Comentario</textarea>
+            <button class="btn btn-primary w-100" type="submit">Registrar acción</button>
         </form>
     }
-    else if (s.Estado is EstadoSolicitud.Aprobada or EstadoSolicitud.Rechazada)
-    { <p>Evaluación finalizada. La decisión y su sustento están disponibles en el historial.</p><p class="small text-secondary">Esta decisión es ficticia y carece de validez administrativa.</p> }
+    else if (s.Estado == EstadoSolicitud.Finalizada)
+    { <p>Expediente finalizado. La resolución, los resultados individuales y la carga académica simulada están disponibles para consulta.</p><p class="small text-secondary">Carga confirmada: @s.CargaConfirmadaUtc?.HoraPeru()</p> }
     else
-    { <p>Cambia el perfil simulado en el menú superior para continuar.</p><p class="small text-secondary">Recibida → Secretaría<br />En revisión → Comisión académica<br />Observada → Estudiante (subsanación)</p> }
+    { <p>No hay acciones disponibles para este perfil y estado.</p><p class="small text-secondary">Selecciona el responsable correspondiente en la esquina superior derecha. El cambio abre su panel y conserva este expediente como activo.</p> }
     <hr /><a asp-action="Detalle" asp-route-id="@s.Id">Actualizar expediente →</a>
-</section><p class="small text-secondary mt-3">Los perfiles son perspectivas de tu sesión de demo. Puedes cambiarlos para recorrer el proceso; los expedientes y comentarios de otros navegadores no se muestran.</p></aside></div>
+</section><p class="small text-secondary mt-3">Simulación académica sin autenticación. Los expedientes de otros navegadores permanecen aislados.</p></aside></div>

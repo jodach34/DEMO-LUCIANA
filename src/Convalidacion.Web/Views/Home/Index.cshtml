@@ -1,30 +1,54 @@
-﻿@model DashboardViewModel
-@{ ViewData["Title"] = "Panel general"; }
-<section class="hero mb-4">
-    <div>
-        <p class="eyebrow">GESTIÓN ACADÉMICA / CONVALIDACIONES</p>
-        <h1>Un proceso claro.<br />Cada solicitud, en seguimiento.</h1>
-        <p class="hero-description">Del registro a la evaluación académica: centraliza la información, identifica observaciones y consulta cada cambio en un solo lugar.</p>
-        <a class="btn btn-primary me-2" asp-controller="Solicitudes" asp-action="Crear">+ Nueva solicitud</a>
-        <a class="btn btn-outline-secondary" asp-controller="Solicitudes" asp-action="Index">Ver solicitudes</a>
+@model DashboardViewModel
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{
+    ViewData["Title"] = "Inicio";
+    var estudiante = Perfiles.Actual == PerfilDemo.Estudiante;
+}
+<section class="institutional-banner" aria-labelledby="tituloBienvenida">
+    <div class="banner-content">
+        <h1 id="tituloBienvenida">Convalidación de Asignaturas <span>USMP</span></h1>
+        <p>@(estudiante ? "Gestiona tu solicitud de convalidación de asignaturas de forma simple, rápida y con seguimiento en línea." : $"Bienvenido, {Perfiles.Actual.Texto()}. Consulta los expedientes y continúa con la atención de solicitudes.")</p>
+        @if (estudiante)
+        { <a class="btn btn-primary" asp-controller="Solicitudes" asp-action="Crear">Nueva solicitud <partial name="_Icon" model='@("plus")' /></a> }
+        else
+        { <a class="btn btn-primary" asp-controller="Solicitudes" asp-action="Index" asp-route-pendientes="true">Abrir mi bandeja <partial name="_Icon" model='@("chevron-right")' /></a> }
     </div>
-    <div class="hero-note"><span class="eyebrow">PROYECTO UNIVERSITARIO</span><strong>FIA–EPICS</strong><p>Mejora del proceso de convalidación de asignaturas</p><span class="small">Registro · Revisión · Decisión · Trazabilidad</span></div>
+    <div class="banner-campus" aria-hidden="true"></div>
 </section>
-<section class="row g-3 mb-5" aria-label="Indicadores actuales de solicitudes">
-    @foreach (var indicador in new[] { ("Solicitudes registradas", Model.Total, "Todas las solicitudes de la demo"), ("Por atender", Model.Pendientes, "Recibidas y en revisión"), ("Con observaciones", Model.Observadas, "Pendientes de subsanación"), ("Aprobadas", Model.Aprobadas, "Evaluación final favorable") })
-    {
-        <div class="col-6 col-lg-3"><article class="metric"><span>@indicador.Item1</span><strong>@indicador.Item2.ToString("D2")</strong><small>@indicador.Item3</small></article></div>
-    }
-</section>
-<section class="mb-5">
-    <div class="section-heading"><div><p class="eyebrow">RUTA DEL PROCESO</p><h2>De la solicitud a la decisión</h2></div><span class="small text-secondary">Cambia de perfil para recorrer la demo</span></div>
-    <div class="row g-3 process-steps">
-        <div class="col-md-4"><article class="process-step"><span>01</span><h3>Registra</h3><p>El estudiante ingresa una asignatura y confirma los documentos simulados.</p></article></div>
-        <div class="col-md-4"><article class="process-step"><span>02</span><h3>Verifica</h3><p>Secretaría revisa la información o solicita una subsanación con sustento.</p></article></div>
-        <div class="col-md-4"><article class="process-step"><span>03</span><h3>Evalúa y resuelve</h3><p>La comisión evalúa la equivalencia y registra su decisión en el historial.</p></article></div>
+<div class="dashboard-grid">
+    <div class="dashboard-overview">
+        <partial name="_EtapasProceso" model="@(Model.Activa ?? new Solicitud())" />
+        <section class="panel quick-access" aria-labelledby="tituloAccesos">
+            <h2 id="tituloAccesos">Accesos rápidos</h2>
+            <div class="quick-access-grid">
+                @if (estudiante)
+                { <a asp-controller="Solicitudes" asp-action="Crear"><partial name="_Icon" model='@("file-plus")' /><span>Nueva<br />solicitud</span><span class="quick-arrow" aria-hidden="true">›</span></a> }
+                else
+                { <a asp-controller="Solicitudes" asp-action="Index" asp-route-pendientes="true"><partial name="_Icon" model='@("clipboard")' /><span>Mi bandeja<br />de atención</span><span class="quick-arrow" aria-hidden="true">›</span></a> }
+                <a asp-controller="Solicitudes" asp-action="Index"><partial name="_Icon" model='@("book")' /><span>Consultar<br />solicitudes</span><span class="quick-arrow" aria-hidden="true">›</span></a>
+                <a asp-controller="Solicitudes" asp-action="Index" asp-route-conResolucion="true"><partial name="_Icon" model='@("clipboard")' /><span>Consultar<br />resoluciones</span><span class="quick-arrow" aria-hidden="true">›</span></a>
+                <a asp-controller="Complementos" asp-action="Ayuda"><partial name="_Icon" model='@("help")' /><span>Preguntas<br />frecuentes</span><span class="quick-arrow" aria-hidden="true">›</span></a>
+            </div>
+        </section>
     </div>
+    <partial name="_ResumenSolicitud" model="@(new ResumenSolicitudViewModel(Model.Activa))" />
+    <section class="panel recent-requests" aria-labelledby="tituloRecientes">
+        <div class="section-heading"><h2 id="tituloRecientes">@(estudiante ? "Mis solicitudes de convalidación" : $"Bandeja · {Perfiles.Actual.Texto()}")</h2><a asp-controller="Solicitudes" asp-action="Index">Ver todas →</a></div>
+        <partial name="_SolicitudesTabla" model="Model.Recientes" />
+    </section>
+    <section class="panel digital-benefits" aria-labelledby="tituloBeneficios">
+        <h2 id="tituloBeneficios"><partial name="_Icon" model='@("chart")' />Beneficios esperados del proceso digital</h2>
+        <ul>
+            <li><partial name="_Icon" model='@("check-circle")' /><span>Consulta del estado en línea</span></li>
+            <li><partial name="_Icon" model='@("check-circle")' /><span>Información centralizada</span></li>
+            <li><partial name="_Icon" model='@("check-circle")' /><span>Validaciones de registro</span></li>
+            <li><partial name="_Icon" model='@("check-circle")' /><span>Historial de solicitudes</span></li>
+        </ul>
+        <a asp-controller="Complementos" asp-action="Proceso">Comparar AS-IS / TO-BE →</a>
+    </section>
+</div>
+<section class="dashboard-metrics" aria-label="Indicadores actuales de solicitudes">
+    @foreach (var indicador in new[] { ("Solicitudes registradas", Model.Total), ("Por atender en mi perfil", Model.Pendientes), ("Con observaciones", Model.Observadas), ("Finalizadas", Model.Finalizadas) })
+    { <article class="metric"><strong>@indicador.Item2.ToString("D2")</strong><span>@indicador.Item1</span></article> }
 </section>
-<section class="panel">
-    <div class="section-heading"><div><p class="eyebrow">BANDEJA CENTRALIZADA</p><h2>Últimas solicitudes</h2></div><a asp-controller="Solicitudes" asp-action="Index">Ver todas →</a></div>
-    <partial name="_SolicitudesTabla" model="Model.Recientes" />
-</section>
+<p class="text-end mt-2"><a asp-controller="Complementos" asp-action="Indicadores">Ver indicadores y gráficos de la sesión →</a></p>

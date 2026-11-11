@@ -1,0 +1,13 @@
+@model ResumenSolicitudViewModel
+@{ var activa = Model.Solicitud; }
+<section class="panel active-request" aria-labelledby="tituloSolicitudActiva">
+    <div class="section-heading"><h2 id="tituloSolicitudActiva">Expediente activo</h2>@if(activa is not null){ <a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@activa.Id" aria-label="Ver solicitud @activa.Codigo"><partial name="_Icon" model='@("chevron-right")' /></a> }</div>
+    @if(activa is not null)
+    {
+        <div class="active-request-summary"><span class="request-icon"><partial name="_Icon" model='@("file")' /></span><div><h3>@activa.Codigo</h3><p><partial name="_EstadoSolicitud" model="activa.Estado" /></p><p>@activa.CreadaUtc.HoraPeru()</p></div></div>
+        <p class="active-subject">@activa.Cursos.Count asignatura(s) · @(activa.VersionProceso == 2 ? $"Etapa {activa.Etapa} de 4" : "Versión anterior")</p>
+        <a class="request-followup" asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@activa.Id">Continuar seguimiento <span aria-hidden="true">→</span></a>
+        <small class="recent-scope">El expediente se conserva al cambiar de perfil.</small>
+    }
+    else { <p class="text-secondary">No tienes un expediente activo. Selecciona uno de la bandeja.</p><a asp-controller="Solicitudes" asp-action="Index">Consultar solicitudes →</a> }
+</section>

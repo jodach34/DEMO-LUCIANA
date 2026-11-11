@@ -1,0 +1,6 @@
+@model IReadOnlyList<ResultadoDictamen>
+<div class="table-responsive" tabindex="0" role="region" aria-label="Resultados académicos individuales"><table class="table align-middle">
+    <caption class="visually-hidden">Resultados individuales conservados en el documento emitido</caption>
+    <thead><tr><th>Origen / destino ficticio</th><th>Créditos origen / destino</th><th>Coincidencia</th><th>Resultado</th><th>Justificación del Director</th></tr></thead>
+    <tbody>@foreach(var d in Model) { <tr><td><strong>@d.Origen</strong><small class="d-block">@d.CodigoDestino · @d.Destino</small></td><td>@d.CreditosOrigen / @d.CreditosDestino</td><td>@d.Coincidencia%</td><td><span class="status result-@d.Resultado">@d.Resultado</span></td><td class="document-justification">@d.Justificacion @if(d.ExcepcionAfinidad){ <small class="d-block">Excepción por afinidad directa: @d.JustificacionExcepcion</small> }</td></tr> }</tbody>
+</table></div>

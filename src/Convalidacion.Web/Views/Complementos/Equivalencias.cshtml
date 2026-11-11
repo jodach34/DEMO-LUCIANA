@@ -1,0 +1,21 @@
+@model EquivalenciasViewModel
+@{ ViewData["Title"] = "Equivalencias por plan"; }
+<div class="page-heading"><div><h1>Equivalencias por plan de estudios</h1><p>Consulta del plan ilustrativo FIA–EPICS · DEMO.</p></div></div>
+<div class="alert alert-warning">Catálogo ilustrativo de asignaturas USMP. No constituye un plan vigente ni una relación oficial de equivalencias. Los cursos de origen y los resultados pertenecen exclusivamente al expediente ficticio seleccionado de tu sesión.</div>
+<section class="panel">
+    <form method="get" class="catalog-filters">
+        <div><label for="buscar" class="form-label">Curso o código</label><input class="form-control" id="buscar" name="buscar" maxlength="120" value="@Model.Buscar" type="search" /></div>
+        <div><label for="creditos" class="form-label">Créditos</label><select class="form-select" id="creditos" name="creditos"><option value="">Todos</option>@foreach(var n in new[]{3,4}){<option value="@n" selected="@(Model.Creditos == n)">@n créditos</option>}</select></div>
+        <div><label for="expedienteId" class="form-label">Comparar con expediente</label><select class="form-select" id="expedienteId" name="expedienteId"><option value="">Solo catálogo ilustrativo</option>@foreach(var s in Model.Expedientes){<option value="@s.Id" selected="@(Model.Expediente?.Id == s.Id)">@s.Codigo · @s.Estado.Texto()</option>}</select></div>
+        <button class="btn btn-primary" type="submit">Consultar</button><a asp-action="Equivalencias">Limpiar</a>
+    </form>
+    @if(Model.Expediente is {} expediente){<p><a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@expediente.Id">Ver @expediente.Codigo</a> · @expediente.Estado.Texto()</p>}
+    <div class="table-responsive"><table class="table align-middle"><caption>Asignaturas del plan ficticio de demostración. Las comparaciones no establecen equivalencias oficiales.</caption><thead><tr><th>Código / curso USMP</th><th>Créditos</th><th>Información académica</th><th>Asignatura de origen</th><th>Evaluación del expediente</th></tr></thead><tbody>
+    @foreach(var a in Model.Catalogo)
+    {
+        var curso = Model.Expediente?.Cursos.FirstOrDefault(c => c.AsignaturaId == a.Id);
+        <tr data-catalog-course><td><strong>@a.Codigo</strong><br />@a.Nombre</td><td>@a.Creditos</td><td>Plan DEMO · Formación de ingeniería.<br /><small>Contenidos y créditos ilustrativos; sin vigencia oficial.</small></td><td>@(curso?.AsignaturaOrigen ?? "Sin comparación")@if(curso is not null){<small class="d-block">@curso.CreditosOrigen créditos de origen</small>}</td><td>@if(curso is not null){<span class="status result-@curso.Resultado">@curso.Resultado</span><small class="d-block">@(curso.Coincidencia.HasValue ? $"{curso.Coincidencia}% registrado por el Director" : "Sin porcentaje registrado")</small>}else{<span>Sin evaluación asociada</span>}</td></tr>
+    }
+    @if(Model.Catalogo.Count == 0){<tr><td colspan="5">No hay asignaturas con estos filtros.</td></tr>}
+    </tbody></table></div>
+</section>

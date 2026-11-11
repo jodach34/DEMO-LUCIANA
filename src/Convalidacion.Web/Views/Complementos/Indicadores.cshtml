@@ -1,0 +1,30 @@
+@model IndicadoresViewModel
+@using System.Globalization
+@{ ViewData["Title"] = "Indicadores KPI"; }
+<div class="page-heading"><div><h1>Indicadores del proceso</h1><p>Datos ficticios calculados exclusivamente con los expedientes de tu sesión actual.</p></div></div>
+<section class="kpi-grid" aria-label="Indicadores calculados">
+    <article class="panel kpi-card"><span>Total de solicitudes</span><strong data-kpi="total">@Model.Total</strong><small>Todos los expedientes de esta sesión.</small></article>
+    <article class="panel kpi-card"><span>Solicitudes finalizadas</span><strong data-kpi="finalizadas">@Model.Finalizadas</strong><small>Estado actual: Finalizada.</small></article>
+    <article class="panel kpi-card"><span>Tiempo promedio de atención</span><strong data-kpi="tiempo">@(Model.PromedioHoras.HasValue ? $"{Model.PromedioHoras:0.00} h" : "Sin datos")</strong><small>Desde presentación hasta finalización, en @Model.FinalizadasConFechas expedientes finalizados con fechas válidas.</small></article>
+    <article class="panel kpi-card"><span>Expedientes con observaciones</span><strong data-kpi="observaciones">@(Model.TasaObservaciones.HasValue ? $"{Model.TasaObservaciones:0.0}%" : "Sin datos")</strong><small>@Model.Observadas de @Model.Total expedientes tuvieron al menos una observación documental, académica o devolución decanal; cada expediente se cuenta una vez.</small></article>
+    <article class="panel kpi-card"><span>Tasa de convalidación de asignaturas</span><strong data-kpi="convalidacion">@(Model.TasaConvalidacion.HasValue ? $"{Model.TasaConvalidacion:0.0}%" : "Sin datos")</strong><small>@Model.Aprobadas aprobadas / @Model.Decididas asignaturas con decisión actual (aprobadas + rechazadas). Excluye pendientes y observadas. No es una tasa oficial.</small></article>
+</section>
+<div class="complement-grid mt-3">
+    <section class="panel"><h2>Expedientes por etapa</h2><p class="text-muted">Incluye finalizados en la cuarta etapa.</p>
+        @foreach(var par in Model.PorEtapa)
+        {
+            var nombre = new[]{"", "Recepción documental", "Evaluación académica", "Aprobación decanal", "Registro académico"}[par.Key];
+            var ancho = Model.Total > 0 ? (100m * par.Value / Model.Total).ToString("0.##", CultureInfo.InvariantCulture) : "0";
+            <div class="chart-row"><div><span>@par.Key. @nombre</span><strong>@par.Value</strong></div><div class="chart-track" role="img" aria-label="@nombre: @par.Value de @Model.Total expedientes"><span style="width:@(ancho)%"></span></div></div>
+        }
+        @if(Model.Total == 0){<p>Sin datos</p>}
+    </section>
+    <section class="panel"><h2>Solicitudes pendientes por responsable</h2><p class="text-muted">Según el estado actual y las acciones disponibles en cada perfil.</p>
+        @foreach(var par in Model.PorResponsable)
+        {
+            var ancho = Model.Total > 0 ? (100m * par.Value / Model.Total).ToString("0.##", CultureInfo.InvariantCulture) : "0";
+            <div class="chart-row"><div><span>@par.Key.Texto()</span><strong>@par.Value</strong></div><div class="chart-track" role="img" aria-label="@par.Key.Texto(): @par.Value pendientes"><span style="width:@(ancho)%"></span></div></div>
+        }
+    </section>
+</div>
+<p class="mt-3 text-muted">Las fechas futuras, anteriores a la presentación o sin movimiento de finalización se excluyen del promedio. No se usan métricas históricas institucionales ni valores predeterminados para simular resultados.</p>

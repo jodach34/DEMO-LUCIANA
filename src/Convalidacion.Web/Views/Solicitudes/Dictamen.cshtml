@@ -1,0 +1,12 @@
+@model DictamenAcademico
+@{ ViewData["Title"] = Model.Numero; }
+<a asp-action="Detalle" asp-route-id="@Model.SolicitudId" class="back-link">← Volver al expediente</a>
+<section class="panel mt-4 academic-document">
+    <p class="eyebrow">ETAPA 2 / EVALUACIÓN TÉCNICA Y ACADÉMICA</p><h1>Dictamen académico</h1>
+    <p class="demo-document-warning">DOCUMENTO ACADÉMICO DE DEMOSTRACIÓN — SIN VALIDEZ OFICIAL.</p>
+    <dl class="row detail-list mt-4"><dt class="col-md-3">Número ficticio</dt><dd class="col-md-9">@Model.Numero · Versión @Model.Version · @Model.Situacion</dd><dt class="col-md-3">Expediente</dt><dd class="col-md-9">@Model.Solicitud.Codigo · @Model.Solicitud.Estudiante</dd><dt class="col-md-3">Responsable simulado</dt><dd class="col-md-9">Director del Departamento Académico</dd><dt class="col-md-3">Emisión</dt><dd class="col-md-9">@Model.EmitidoUtc.HoraPeru()</dd></dl>
+    <partial name="_ResultadosDictamen" model="Model.Detalles" />
+    <h2 class="mt-4">Sustento del dictamen</h2><p class="preserve-lines">@Model.Justificacion</p>
+    @if(!string.IsNullOrWhiteSpace(Model.ObservacionDecanal)){ <div class="alert alert-warning"><strong>Devuelto por el Decano:</strong> @Model.ObservacionDecanal</div> }
+    <p class="small text-secondary mb-0">Esta versión conserva las evaluaciones al momento de su emisión. Una nueva evaluación requiere emitir otra versión del dictamen.</p>
+</section>

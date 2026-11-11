@@ -1,0 +1,28 @@
+@model CalculadoraViewModel
+@{ ViewData["Title"] = "Calculadora orientativa"; }
+<div class="page-heading"><div><h1>Calculadora orientativa</h1><p>Explora criterios didácticos antes de presentar una solicitud.</p></div></div>
+<div class="alert alert-warning">Catálogo ficticio, sin equivalencias oficiales. Este cálculo no aprueba asignaturas. La decisión corresponde al <strong>Director del Departamento Académico</strong>, con revisión documental y académica.</div>
+<div class="complement-grid">
+    <section class="panel">
+        <h2>Comparar asignaturas</h2>
+        <form method="post" asp-action="Calculadora" id="calculadora">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="mb-3"><label asp-for="AsignaturaId" class="form-label"></label><select asp-for="AsignaturaId" class="form-select" required><option value="">Seleccionar del catálogo ficticio</option>@foreach(var a in Model.Catalogo){<option value="@a.Id" data-creditos="@a.Creditos">@a.Codigo · @a.Nombre (@a.Creditos créditos)</option>}</select></div>
+            <p>Créditos de destino: <strong id="creditosDestino">@(Model.Catalogo.FirstOrDefault(a => a.Id == Model.AsignaturaId)?.Creditos.ToString() ?? "Selecciona una asignatura")</strong></p>
+            <div class="mb-3"><label asp-for="AsignaturaOrigen" class="form-label"></label><input asp-for="AsignaturaOrigen" class="form-control" /></div>
+            <div class="mb-3"><label asp-for="CreditosOrigen" class="form-label"></label><input asp-for="CreditosOrigen" class="form-control" /></div>
+            <div class="mb-3"><label asp-for="Coincidencia" class="form-label"></label><input asp-for="Coincidencia" class="form-control" aria-describedby="criteriosDemo" /></div>
+            <div class="form-check mb-3"><input asp-for="AfinidadDirecta" class="form-check-input" /><label asp-for="AfinidadDirecta" class="form-check-label"></label></div>
+            <button class="btn btn-primary" type="submit">Consultar orientación</button>
+        </form>
+    </section>
+    <section class="panel" id="criteriosDemo">
+        <h2>Cómo estimar los contenidos</h2>
+        <p>Compara diez temas de igual peso en dos sílabos ficticios. Cada tema coincidente representa 10 puntos porcentuales: ocho temas dan 80%; siete, 70%. Introduce tu estimación entre 0 y 100. Es un ejercicio explícito de demostración, sin análisis automático del sílabo.</p>
+        <ul><li>Referencia general: al menos 80% de contenidos y créditos de origen suficientes.</li><li>Excepción desde 70%: afinidad temática directa y créditos de origen iguales a los de destino, con justificación del Director.</li></ul>
+        <p>El flujo académico además revisa la nota y los documentos. La calculadora no registra un dictamen ni modifica expedientes.</p>
+        @if(Model.Resultado is { } r)
+        { <div class="orientation-result" role="status"><h3>Resultado orientativo</h3><p><strong>@Model.AsignaturaOrigen → @r.Destino.Nombre</strong></p><p>Origen: @Model.CreditosOrigen créditos · Destino: @r.Destino.Creditos créditos · Contenidos: @Model.Coincidencia%</p><p>@r.Mensaje</p><strong>No constituye aprobación ni equivalencia oficial.</strong></div> }
+    </section>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
