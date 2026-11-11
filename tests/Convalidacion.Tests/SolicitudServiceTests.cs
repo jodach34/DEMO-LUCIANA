@@ -164,7 +164,7 @@ public class SolicitudServiceTests : IAsyncLifetime
     {
         var id = await service.CrearAsync(Valida(), PerfilDemo.Estudiante); await DemoSeeder.SeedAsync(db);
         Assert.Equal(7, await db.Solicitudes.CountAsync()); Assert.Equal(4, await db.Asignaturas.CountAsync());
-        Assert.NotNull(await db.Solicitudes.FindAsync(id)); Assert.Equal(3, (await db.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.NotNull(await db.Solicitudes.FindAsync(id)); Assert.Equal(4, (await db.Database.GetAppliedMigrationsAsync()).Count());
         Assert.All(await db.Seguimientos.ToListAsync(), h => Assert.Null(h.PerfilHistorico));
     }
 
@@ -235,9 +235,13 @@ public class SolicitudServiceTests : IAsyncLifetime
         await Assert.ThrowsAsync<ReglaProcesoException>(() => service.EjecutarAsync(new() { Id = id, Revision = s.Revision,
             Accion = AccionSolicitud.EmitirResolucion, Comentario = "Resolución sin datos obligatorios." }, PerfilDemo.Decano));
         await Aplicar(id, AccionSolicitud.EmitirResolucion, PerfilDemo.Decano); Assert.Equal(s.Dictamenes[0].DetallesJson, s.Resolucion!.DetallesJson);
-        await Aplicar(id, AccionSolicitud.Notificar, PerfilDemo.Decano); Assert.Equal(2, s.Notificaciones.Count);
-        Assert.Equal(new[] { PerfilDemo.Estudiante, PerfilDemo.RegistrosAcademicos }, s.Notificaciones.Select(n => n.Destinatario));
+        await Aplicar(id, AccionSolicitud.Notificar, PerfilDemo.Decano);
+        var decanales = s.Notificaciones.Where(n => n.Tipo == AccionSolicitud.Notificar).ToList();
+        Assert.Equal(2, decanales.Count);
+        Assert.Equal(new[] { PerfilDemo.Estudiante, PerfilDemo.RegistrosAcademicos }, decanales.Select(n => n.Destinatario));
+        var cantidad = s.Notificaciones.Count;
         await Assert.ThrowsAsync<ReglaProcesoException>(() => Aplicar(id, AccionSolicitud.Notificar, PerfilDemo.Decano));
+        Assert.Equal(cantidad, s.Notificaciones.Count);
     }
 
     [Fact]

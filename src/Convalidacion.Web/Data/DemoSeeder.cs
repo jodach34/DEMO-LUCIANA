@@ -9,7 +9,8 @@ public static class DemoSeeder
 {
     public static async Task SeedAsync(AppDbContext db)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync();
+        // Permite que el reinicio incluya borrado y siembra en una sola transacción.
+        await using var transaction = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync() : null;
         if (!await db.Asignaturas.AnyAsync())
         {
             db.Asignaturas.AddRange(
@@ -23,7 +24,7 @@ public static class DemoSeeder
         if (!await db.Solicitudes.AnyAsync())
         {
             var catalogo = await db.Asignaturas.OrderBy(a => a.Id).Take(2).ToListAsync();
-            if (catalogo.Count < 2) { await transaction.CommitAsync(); return; }
+            if (catalogo.Count < 2) throw new InvalidOperationException("El catálogo de demostración requiere al menos dos asignaturas.");
             for (var i = 0; i < 6; i++)
             {
                 var reloj = new RelojSemilla(new DateTimeOffset(2026, 11, 1 + i, 15, 0, 0, TimeSpan.Zero));
@@ -70,7 +71,7 @@ public static class DemoSeeder
                 await Aplicar(AccionSolicitud.Finalizar, PerfilDemo.RegistrosAcademicos);
             }
         }
-        await transaction.CommitAsync();
+        if (transaction is not null) await transaction.CommitAsync();
     }
     private sealed class RelojSemilla(DateTimeOffset fecha) : TimeProvider
     {

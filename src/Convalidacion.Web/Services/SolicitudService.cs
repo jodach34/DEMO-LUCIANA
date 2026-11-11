@@ -73,6 +73,7 @@ public class SolicitudService(AppDbContext db, TimeProvider clock, ILogger<Solic
             Historial = [new() { Estado = EstadoSolicitud.Presentada, Accion = AccionSolicitud.Presentar, Perfil = perfil, FechaUtc = ahora,
                 Comentario = "Solicitud presentada con certificado y sílabos simulados." }]
         };
+        NotificacionService.Agregar(solicitud, AccionSolicitud.Presentar, ahora);
         db.Solicitudes.Add(solicitud);
         await db.SaveChangesAsync(ct);
         logger.LogInformation("Expediente {SolicitudId} presentado con {Cursos} asignaturas", solicitud.Id, solicitud.Cursos.Count);
@@ -138,9 +139,6 @@ public class SolicitudService(AppDbContext db, TimeProvider clock, ILogger<Solic
                 s.Estado = EstadoSolicitud.ResolucionEmitida; break;
             case AccionSolicitud.Notificar:
                 Exigir(s.Resolucion is not null, "No existe una resolución para notificar.");
-                foreach (var destinatario in new[] { PerfilDemo.Estudiante, PerfilDemo.RegistrosAcademicos })
-                    s.Notificaciones.Add(new() { Destinatario = destinatario, FechaUtc = ahora,
-                        Mensaje = $"Resolución simulada {s.Resolucion!.Numero} disponible para el expediente {s.Codigo}." });
                 s.Estado = EstadoSolicitud.NotificacionRealizada; break;
             case AccionSolicitud.RemitirRegistro: s.Estado = EstadoSolicitud.RegistroAcademicoPendiente; break;
             case AccionSolicitud.RegistrarAsignaturas:
@@ -226,6 +224,7 @@ public class SolicitudService(AppDbContext db, TimeProvider clock, ILogger<Solic
     {
         s.ActualizadaUtc = fecha; s.Revision = Guid.NewGuid();
         s.Historial.Add(new() { EstadoAnterior = anterior, Estado = s.Estado, Accion = accion, Perfil = perfil, FechaUtc = fecha, Comentario = comentario.Trim() });
+        NotificacionService.Agregar(s, accion, fecha);
         await db.SaveChangesAsync(ct); // Una transacción EF guarda transición, detalles, documentos y revisión de forma atómica.
         logger.LogInformation("Expediente {SolicitudId}: {Accion}, {Anterior} → {Estado}, {Perfil}", s.Id, accion, anterior, s.Estado, perfil);
     }

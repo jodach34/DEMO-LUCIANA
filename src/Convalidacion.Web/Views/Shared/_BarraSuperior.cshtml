@@ -2,7 +2,11 @@
 @using Microsoft.EntityFrameworkCore
 @inject Convalidacion.Web.Data.AppDbContext Db
 @inject Convalidacion.Web.Services.PerfilDemoService Perfiles
-@{ var avisos = await Db.Notificaciones.AsNoTracking().Include(n => n.Solicitud).Where(n => n.Destinatario == Perfiles.Actual).OrderByDescending(n => n.FechaUtc).ThenByDescending(n => n.Id).Take(5).ToListAsync(); var total = avisos.Count + (string.IsNullOrEmpty(Model) ? 0 : 1); }
+@{
+    var query = Db.Notificaciones.AsNoTracking().Where(n => n.Destinatario == Perfiles.Actual);
+    var total = await query.CountAsync(n => n.LeidaUtc == null);
+    var avisos = await query.Include(n => n.Solicitud).OrderByDescending(n => n.FechaUtc).ThenByDescending(n => n.Id).Take(5).ToListAsync();
+}
 <header class="topbar">
     <button class="menu-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Abrir menú"><partial name="_Icon" model='@("menu")' /></button>
     <form asp-controller="Solicitudes" asp-action="Index" method="get" class="header-search" role="search">
@@ -12,11 +16,15 @@
     </form>
     <div class="topbar-actions">
         <div class="dropdown notification-dropdown">
-            <button class="notification-button" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Avisos recientes del perfil: @total">
+            <button class="notification-button" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificaciones sin leer del perfil: @total">
                 <partial name="_Icon" model='@("bell")' />
                 @if (total > 0) { <span class="notification-count">@total</span> }
             </button>
-            <div class="dropdown-menu dropdown-menu-end notification-menu"><strong>Avisos recientes del perfil</strong>@if(!string.IsNullOrEmpty(Model)){ <p>@Model</p> }@foreach(var aviso in avisos){ <p><a asp-controller="Solicitudes" asp-action="Resolucion" asp-route-id="@aviso.SolicitudId">@aviso.Mensaje</a><small class="d-block">@aviso.FechaUtc.HoraPeru()</small></p> }@if(total == 0){ <p class="mb-0">No hay avisos recientes.</p> }</div>
+            <div class="dropdown-menu dropdown-menu-end notification-menu"><strong>Avisos recientes · @Perfiles.Actual.Texto()</strong>
+                @foreach(var aviso in avisos){<p><a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@aviso.SolicitudId">@aviso.Mensaje</a><small class="d-block">@aviso.FechaUtc.HoraPeru() · @(aviso.LeidaUtc is null ? "Sin leer" : "Leída")</small></p>}
+                @if(avisos.Count == 0){<p>No hay avisos recientes.</p>}
+                <a asp-controller="Notificaciones" asp-action="Index">Ver centro de notificaciones (@total sin leer)</a>
+            </div>
         </div>
         <partial name="_SelectorPerfil" />
     </div>

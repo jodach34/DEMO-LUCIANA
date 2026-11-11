@@ -1,5 +1,7 @@
 # Bloque 1: rediseño visual USMP
 
+> Documento histórico del Bloque 1. Sus menciones a Secretaría, Comisión académica y funciones pendientes describen esa versión anterior. Los perfiles actuales son Estudiante, Oficina de Admisión, Director del Departamento Académico, Decano y Registros Académicos. Consulta el [Bloque 3](BLOQUE-3-COMPLEMENTOS.md) para el alcance vigente.
+
 Implementación local para revisión. Este bloque no reorganiza perfiles ni amplía el proceso de negocio.
 
 ## Resultado visual

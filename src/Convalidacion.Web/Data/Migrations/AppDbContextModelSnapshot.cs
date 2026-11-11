@@ -247,7 +247,13 @@ namespace Convalidacion.Web.Data.Migrations
                     b.Property<int>("Destinatario")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("EventoId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("FechaUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LeidaUtc")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Mensaje")
@@ -258,9 +264,12 @@ namespace Convalidacion.Web.Data.Migrations
                     b.Property<int>("SolicitudId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Tipo")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("SolicitudId", "Destinatario")
+                    b.HasIndex("SolicitudId", "Destinatario", "EventoId")
                         .IsUnique();
 
                     b.ToTable("Notificaciones");

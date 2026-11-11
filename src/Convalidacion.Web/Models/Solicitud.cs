@@ -177,6 +177,9 @@ public class NotificacionExpediente
     public Solicitud Solicitud { get; set; } = null!;
     public PerfilDemo Destinatario { get; set; }
     public DateTime FechaUtc { get; set; }
+    public Guid EventoId { get; set; } = Guid.NewGuid();
+    public AccionSolicitud Tipo { get; set; } = AccionSolicitud.Notificar;
+    public DateTime? LeidaUtc { get; set; }
     [MaxLength(300)] public string Mensaje { get; set; } = "";
 }
 

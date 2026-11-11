@@ -27,7 +27,7 @@
                 { <a asp-controller="Solicitudes" asp-action="Index" asp-route-pendientes="true"><partial name="_Icon" model='@("clipboard")' /><span>Mi bandeja<br />de atención</span><span class="quick-arrow" aria-hidden="true">›</span></a> }
                 <a asp-controller="Solicitudes" asp-action="Index"><partial name="_Icon" model='@("book")' /><span>Consultar<br />solicitudes</span><span class="quick-arrow" aria-hidden="true">›</span></a>
                 <a asp-controller="Solicitudes" asp-action="Index" asp-route-conResolucion="true"><partial name="_Icon" model='@("clipboard")' /><span>Consultar<br />resoluciones</span><span class="quick-arrow" aria-hidden="true">›</span></a>
-                <a asp-controller="Home" asp-action="Privacy"><partial name="_Icon" model='@("help")' /><span>Acerca de<br />la demo</span><span class="quick-arrow" aria-hidden="true">›</span></a>
+                <a asp-controller="Complementos" asp-action="Ayuda"><partial name="_Icon" model='@("help")' /><span>Preguntas<br />frecuentes</span><span class="quick-arrow" aria-hidden="true">›</span></a>
             </div>
         </section>
     </div>
@@ -37,16 +37,18 @@
         <partial name="_SolicitudesTabla" model="Model.Recientes" />
     </section>
     <section class="panel digital-benefits" aria-labelledby="tituloBeneficios">
-        <h2 id="tituloBeneficios"><partial name="_Icon" model='@("chart")' />Beneficios del proceso digital</h2>
+        <h2 id="tituloBeneficios"><partial name="_Icon" model='@("chart")' />Beneficios esperados del proceso digital</h2>
         <ul>
             <li><partial name="_Icon" model='@("check-circle")' /><span>Consulta del estado en línea</span></li>
             <li><partial name="_Icon" model='@("check-circle")' /><span>Información centralizada</span></li>
             <li><partial name="_Icon" model='@("check-circle")' /><span>Validaciones de registro</span></li>
             <li><partial name="_Icon" model='@("check-circle")' /><span>Historial de solicitudes</span></li>
         </ul>
+        <a asp-controller="Complementos" asp-action="Proceso">Comparar AS-IS / TO-BE →</a>
     </section>
 </div>
 <section class="dashboard-metrics" aria-label="Indicadores actuales de solicitudes">
     @foreach (var indicador in new[] { ("Solicitudes registradas", Model.Total), ("Por atender en mi perfil", Model.Pendientes), ("Con observaciones", Model.Observadas), ("Finalizadas", Model.Finalizadas) })
     { <article class="metric"><strong>@indicador.Item2.ToString("D2")</strong><span>@indicador.Item1</span></article> }
 </section>
+<p class="text-end mt-2"><a asp-controller="Complementos" asp-action="Indicadores">Ver indicadores y gráficos de la sesión →</a></p>

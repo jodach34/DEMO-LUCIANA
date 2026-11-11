@@ -6,6 +6,8 @@ Aplicación ASP.NET Core MVC con Razor, Bootstrap local, CSS y JavaScript; .NET 
 
 Repositorio esperado: <https://github.com/jodach34/DEMO-LUCIANA.git>.
 
+El **Bloque 3** añade calculadora orientativa, equivalencias del plan ficticio, KPI dinámicos, comparación AS-IS/TO-BE, ayuda, centro de notificaciones y reinicio por sesión. Consulta [funcionalidades, fórmulas y verificación local](docs/BLOQUE-3-COMPLEMENTOS.md).
+
 ## Ejecutar localmente
 
 Requisitos: SDK .NET 10 estable; Git. Docker es opcional para comprobar el contenedor. `global.json` admite las bandas estables del SDK 10.0, incluido el 10.0.400 instalado durante la implementación.
@@ -15,8 +17,8 @@ Desde la raíz:
 ```powershell
 dotnet restore --locked-mode
 dotnet tool restore
-dotnet build --no-restore
-dotnet test --no-build
+dotnet build -c Release --no-restore
+dotnet test -c Release --no-build
 dotnet run --project src/Convalidacion.Web --launch-profile http
 ```
 
@@ -104,7 +106,7 @@ dotnet ef migrations add NombreDelCambio --project src/Convalidacion.Web --outpu
 
 Las variables de entorno sustituyen los valores JSON usando doble guion bajo, por ejemplo `ConnectionStrings__DefaultConnection` y `Demo__SeedData`. Para iniciar sin ejemplos, define `Demo__SeedData=false` antes del primer arranque con una base vacía. No elimina ejemplos ya existentes.
 
-El sembrado es determinista e idempotente: conserva las solicitudes de cada sesión. La migración de aislamiento agrega una columna y un índice sin borrar registros anteriores; estos permanecen en un ámbito interno y no se publican a visitantes. Para una demostración nueva, utiliza otro navegador o una sesión privada. La sesión caduca tras dos horas de inactividad y se pierde al reiniciar el proceso, aunque el archivo SQLite local continúe existiendo. Las claves de cookies también son efímeras. No uses datos reales ni consideres la sesión una identidad autenticada.
+El sembrado es determinista e idempotente: conserva las solicitudes de cada sesión. Las migraciones conservan los registros anteriores en un ámbito interno sin publicarlos a visitantes. **Reiniciar demostración**, en el menú lateral, pide confirmación y reemplaza exclusivamente los expedientes y avisos de la sesión actual por los seis ejemplos iniciales, en una transacción. Conserva el catálogo y los datos ajenos; el perfil seleccionado permanece y el expediente activo se limpia. También puedes iniciar otra sesión privada. La sesión caduca tras dos horas de inactividad y se pierde al reiniciar el proceso, aunque el archivo SQLite local continúe existiendo. Las claves de cookies también son efímeras. No uses datos reales ni consideres la sesión una identidad autenticada.
 
 No se necesitan contraseñas ni claves. No agregues secretos, bases SQLite, archivos `.env` o credenciales de producción al repositorio. Conserva las licencias de las librerías incluidas en `wwwroot/lib`.
 
@@ -154,4 +156,4 @@ El destino debe ser exactamente `https://github.com/jodach34/DEMO-LUCIANA.git`. 
 
 Consulta [docs/VERIFICACION.md](docs/VERIFICACION.md) para los resultados observados y las limitaciones. La existencia del workflow no demuestra que GitHub Actions haya ejecutado los checks: debe verificarse tras publicar el repositorio.
 
-El [informe del Bloque 2](docs/BLOQUE-2-FLUJO-CONVALIDACION.md) documenta los perfiles, transiciones, migración aditiva, pruebas y revisión local. Su implementación está en `feature/flujo-convalidacion`, creada desde `develop` después de integrar el rediseño del Bloque 1. No se desplegó ni se fusionó el Bloque 2 con `main`.
+El [informe histórico del Bloque 2](docs/BLOQUE-2-FLUJO-CONVALIDACION.md) documenta los perfiles, transiciones y pruebas de ese momento. La verificación del 10/11/2026 confirmó que `origin/main` ya incluye ese bloque mediante el merge `cd6c2eb`. Para el Bloque 3 se avanzó `develop` **solo localmente** mediante fast-forward y se creó `feature/bloque-3-complementos` desde esa base. Los cambios del Bloque 3 quedan locales, pendientes de autorización para publicar; no se desplegó en Render.
