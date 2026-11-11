@@ -19,7 +19,7 @@
             <a class="sidebar-link @(resolucion ? "active" : "")" aria-current="@(resolucion ? "page" : null)" asp-controller="Solicitudes" asp-action="Index" asp-route-conResolucion="true"><partial name="_Icon" model='@("file")' /><span>Resoluciones</span></a>
         </div>
         <div class="sidebar-divider"></div>
-        @foreach(var enlace in new[]{("Calculadora", "Calculadora orientativa", "clipboard"), ("Equivalencias", "Equivalencias por plan", "book"), ("Indicadores", "Indicadores KPI", "chart"), ("Proceso", "AS-IS / TO-BE", "layers"), ("Ayuda", "Preguntas frecuentes", "help")})
+        @foreach(var enlace in new[]{("Indicadores", "Indicadores KPI", "chart"), ("Proceso", "AS-IS / TO-BE", "layers"), ("Ayuda", "Preguntas frecuentes", "help")})
         {<a class="sidebar-link @(controller == "Complementos" && action == enlace.Item1 ? "active" : "")" aria-current="@(controller == "Complementos" && action == enlace.Item1 ? "page" : null)" asp-controller="Complementos" asp-action="@enlace.Item1"><partial name="_Icon" model="@enlace.Item3" /><span>@enlace.Item2</span></a>}
         <a class="sidebar-link @(controller == "Notificaciones" ? "active" : "")" asp-controller="Notificaciones" asp-action="Index"><partial name="_Icon" model='@("bell")' /><span>Notificaciones</span></a>
         <a class="sidebar-link @(acerca ? "active" : "")" aria-current="@(acerca ? "page" : null)" asp-controller="Home" asp-action="Privacy"><partial name="_Icon" model='@("help")' /><span>Acerca de la demo</span></a>

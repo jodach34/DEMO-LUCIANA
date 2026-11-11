@@ -40,7 +40,7 @@ try {
     assert('Seis expedientes iniciales', await evaluate(`document.querySelector('[data-kpi="total"]').textContent==='6'`));
     assert('Un expediente finalizado', await evaluate(`document.querySelector('[data-kpi="finalizadas"]').textContent==='1'`));
     assert('Denominador de convalidación explícito', await evaluate(`document.querySelector('[data-kpi="convalidacion"]').parentElement.textContent.includes('3 aprobadas / 6')`));
-    const routes = [['/Complementos/Calculadora', 'calculadora'], ['/Complementos/Equivalencias', 'equivalencias'], ['/Complementos/Indicadores', 'indicadores'], ['/Complementos/Proceso', 'proceso'], ['/Complementos/Ayuda', 'ayuda'], ['/Notificaciones', 'notificaciones']];
+    const routes = [['/', 'inicio'], ['/Complementos/Indicadores', 'indicadores'], ['/Complementos/Proceso', 'proceso'], ['/Complementos/Ayuda', 'ayuda'], ['/Notificaciones', 'notificaciones']];
     for (const [width, height] of [[1366, 900], [1920, 1080], [1024, 768], [768, 1024], [390, 844], [320, 740]]) {
         await viewport(width, height);
         for (const [path, name] of routes) { await navigate(path); await inspect(name + '@' + width); await screenshot(name + '-' + width); }
@@ -48,21 +48,17 @@ try {
     await viewport(1366, 900);
     for (const role of ['Estudiante', 'Admision', 'Director', 'Decano', 'RegistrosAcademicos']) {
         await profile(role);
-        for (const [path, name] of routes) { await navigate(path); assert(role + ' navega ' + name, await evaluate(`document.querySelector('#perfil').value===${JSON.stringify(role)}`)); }
+        for (const [path, name] of routes) {
+            await navigate(path);
+            assert(role + ' navega ' + name, await evaluate(`document.querySelector('#perfil').value===${JSON.stringify(role)}`));
+            assert(role + ' sin accesos ocultos en ' + name, await evaluate(`!document.querySelector('a[href*=Calculadora],a[href*=Equivalencias]')&&!/calculadora|equivalencias/i.test(document.body.textContent)`));
+        }
+        for (const path of ['/Complementos/Calculadora', '/Complementos/Equivalencias?buscar=DEMO-103&creditos=3']) {
+            await navigate(path);
+            assert(role + ' redirige ' + path, await evaluate(`location.pathname==='/'&&document.querySelector('#perfil').value===${JSON.stringify(role)}`));
+        }
     }
-    await profile('Estudiante'); await navigate('/Complementos/Calculadora');
-    await evaluate(`document.querySelector('#AsignaturaId').value='1';document.querySelector('#AsignaturaId').dispatchEvent(new Event('change'));`);
-    assert('Consulta de créditos de destino', await evaluate(`document.querySelector('#creditosDestino').textContent==='4'`));
-    for (const [percent, credits, affinity, text] of [[80, 4, false, 'referencia general'], [70, 4, true, 'excepción orientativa'], [69, 4, true, 'No alcanza'], [90, 3, false, 'insuficientes']]) {
-        await action(`(()=>{const f=document.querySelector('#calculadora');f.querySelector('#AsignaturaId').value='1';f.querySelector('#AsignaturaOrigen').value='Curso ficticio QA';f.querySelector('#CreditosOrigen').value='${credits}';f.querySelector('#Coincidencia').value='${percent}';f.querySelector('#AfinidadDirecta').checked=${affinity};f.requestSubmit();})()`);
-        assert('Orientación ' + percent + '% / ' + credits + ' créditos', await evaluate(`document.querySelector('.orientation-result').textContent.includes(${JSON.stringify(text)})&&document.querySelector('.orientation-result').textContent.includes('No constituye aprobación')`));
-    }
-    await navigate('/Complementos/Equivalencias');
-    await action(`(()=>{const f=document.querySelector('.catalog-filters');f.querySelector('#buscar').value='DEMO-103';f.querySelector('#creditos').value='3';f.requestSubmit();})()`);
-    assert('Búsqueda y filtro del catálogo', await evaluate(`document.querySelectorAll('[data-catalog-course]').length===1&&document.querySelector('[data-catalog-course]').textContent.includes('Gestión de procesos')`));
-    await navigate('/Complementos/Equivalencias');
-    await action(`(()=>{const f=document.querySelector('.catalog-filters');f.querySelector('#expedienteId').selectedIndex=1;f.requestSubmit();})()`);
-    assert('Comparación con resultados del expediente', await evaluate(`!!document.querySelector('.result-Aprobada')&&!!document.querySelector('.result-Rechazada')`));
+    await profile('Estudiante');
     await navigate('/Notificaciones');
     const unread = await evaluate(`Number(document.querySelector('[data-unread]').textContent)`);
     const firstId = await evaluate(`document.querySelector('[data-notification]').dataset.notification`);

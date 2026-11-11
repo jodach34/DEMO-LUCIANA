@@ -21,12 +21,12 @@ public class ComplementosWebTests
 
     [Theory]
     [InlineData("Estudiante")][InlineData("Admision")][InlineData("Director")][InlineData("Decano")][InlineData("RegistrosAcademicos")]
-    public async Task CincoPerfilesNaveganHerramientasSinCambiarSuPerspectiva(string perfil)
+    public async Task CincoPerfilesNaveganSinAccesosAHerramientasOcultas(string perfil)
     {
         using var factory = new DemoFactory(); using var client = Client(factory);
         var html = await client.GetStringAsync("/");
         Assert.Equal(HttpStatusCode.Redirect, (await Post(client, "/Perfiles/Cambiar", html, ("perfil", perfil))).StatusCode);
-        foreach(var path in new[] { "/Complementos/Calculadora", "/Complementos/Equivalencias", "/Complementos/Indicadores", "/Complementos/Proceso", "/Complementos/Ayuda", "/Notificaciones" })
+        foreach(var path in new[] { "/", "/Solicitudes", "/Home/Privacy", "/Complementos/Indicadores", "/Complementos/Proceso", "/Complementos/Ayuda", "/Notificaciones" })
         {
             var response = await client.GetAsync(path); Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             html = await response.Content.ReadAsStringAsync();
@@ -34,39 +34,42 @@ public class ComplementosWebTests
             Assert.Contains("/images/usmp-logo.jpg", html); Assert.Contains("name=\"viewport\"", html);
             Assert.Contains("Reiniciar demostraci", WebUtility.HtmlDecode(html));
             Assert.DoesNotContain("Secretaría", WebUtility.HtmlDecode(html)); Assert.DoesNotContain("Comisión académica", WebUtility.HtmlDecode(html));
+            Assert.DoesNotContain("Calculadora", html, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Equivalencias", html, StringComparison.OrdinalIgnoreCase);
+            if (path == "/")
+            {
+                Assert.Contains("institutional-banner", html); Assert.Contains("dashboard-grid", html);
+                Assert.Contains("quick-access-grid", html); Assert.Contains("dashboard-metrics", html);
+            }
+            foreach (var href in Regex.Matches(html, "href=\"(/[^\"#]*)\"").Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).Distinct())
+                Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(href)).StatusCode);
+        }
+        foreach (var path in new[] { "/Complementos/Calculadora", "/Complementos/Equivalencias", "/Complementos/Equivalencias?buscar=DEMO-103&creditos=3", "/Complementos/Equivalencias?expedienteId=9999", "/Complementos/Equivalencias?creditos=abc" })
+        {
+            var response = await client.GetAsync(path);
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/", response.Headers.Location!.ToString());
+            html = await client.GetStringAsync(response.Headers.Location);
+            Assert.Contains("value=\"" + perfil + "\" selected=\"selected\"", html);
         }
     }
 
     [Fact]
-    public async Task CalculadoraValidaYExplicaResultadoSinCambiarDatos()
+    public async Task CalculadoraPostRedirigeSinCambiarDatosYConservaAntiforgery()
     {
         using var factory = new DemoFactory(); using var client = Client(factory);
-        var html = await client.GetStringAsync("/Complementos/Calculadora");
-        var response = await Post(client, "/Complementos/Calculadora", html, ("AsignaturaId", "1"), ("AsignaturaOrigen", "Curso ficticio"), ("CreditosOrigen", "4"), ("Coincidencia", "70"), ("AfinidadDirecta", "true"));
-        html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("excepción orientativa", html); Assert.Contains("No constituye aprobación", html);
-        Assert.Contains("Director del Departamento Académico", html);
-        response = await Post(client, "/Complementos/Calculadora", html, ("AsignaturaId", "999"), ("AsignaturaOrigen", "Curso ficticio"), ("CreditosOrigen", "4"), ("Coincidencia", "80"));
-        Assert.Contains("validation-summary-errors", await response.Content.ReadAsStringAsync());
-        response = await Post(client, "/Complementos/Calculadora", html, ("AsignaturaId", "1"), ("AsignaturaOrigen", "Curso ficticio"), ("CreditosOrigen", "4"), ("Coincidencia", "101"));
-        Assert.Contains("validation-summary-errors", await response.Content.ReadAsStringAsync());
+        var html = await client.GetStringAsync("/");
         using var scope = factory.Services.CreateScope();
-        Assert.Equal(12, await scope.ServiceProvider.GetRequiredService<AppDbContext>().Solicitudes.IgnoreQueryFilters().CountAsync());
-    }
-
-    [Fact]
-    public async Task EquivalenciasFiltraYNoExponeExpedienteAjeno()
-    {
-        using var factory = new DemoFactory(); using var a = Client(factory); using var b = Client(factory);
-        var html = await a.GetStringAsync("/Complementos/Equivalencias?buscar=DEMO-103&creditos=3");
-        Assert.Single(Regex.Matches(html, "data-catalog-course"));
-        Assert.Contains("DEMO-103", html); Assert.DoesNotContain("<strong>DEMO-101", html);
-        var lista = await a.GetStringAsync("/Solicitudes?estado=Finalizada");
-        var id = Regex.Match(lista, "href=\"/Solicitudes/Detalle/([0-9]+)\"").Groups[1].Value;
-        html = await a.GetStringAsync("/Complementos/Equivalencias?expedienteId=" + id);
-        Assert.Contains("result-Aprobada", html); Assert.Contains("result-Rechazada", html);
-        Assert.Equal(HttpStatusCode.NotFound, (await b.GetAsync("/Complementos/Equivalencias?expedienteId=" + id)).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await a.GetAsync("/Complementos/Equivalencias?creditos=abc")).StatusCode);
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var antes = await db.Solicitudes.IgnoreQueryFilters().OrderBy(s => s.Id).Select(s => new { s.Id, s.Revision, s.Estado }).ToListAsync();
+        foreach (var destino in new[] { "1", "999" })
+        {
+            var response = await Post(client, "/Complementos/Calculadora", html, ("AsignaturaId", destino), ("AsignaturaOrigen", "Curso ficticio"), ("CreditosOrigen", "4"), ("Coincidencia", "70"), ("AfinidadDirecta", "true"));
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/", response.Headers.Location!.ToString());
+        }
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/Complementos/Calculadora", new FormUrlEncodedContent(new Dictionary<string, string>()))).StatusCode);
+        Assert.Equal(antes, await db.Solicitudes.IgnoreQueryFilters().OrderBy(s => s.Id).Select(s => new { s.Id, s.Revision, s.Estado }).ToListAsync());
     }
 
     [Fact]
@@ -96,7 +99,7 @@ public class ComplementosWebTests
         using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var originales = await db.Notificaciones.IgnoreQueryFilters().CountAsync();
         for(var i = 0; i < 3; i++)
-            foreach(var url in new[] { "/", "/Notificaciones", "/Complementos/Indicadores", "/Complementos/Equivalencias" })
+            foreach(var url in new[] { "/", "/Notificaciones", "/Complementos/Indicadores", "/Complementos/Ayuda" })
                 Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(url)).StatusCode);
         Assert.Equal(originales, await db.Notificaciones.IgnoreQueryFilters().CountAsync());
         Assert.Equal(20, Regex.Matches(html, "data-notification=").Count);
