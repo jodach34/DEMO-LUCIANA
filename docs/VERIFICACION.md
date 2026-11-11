@@ -1,6 +1,10 @@
-# Verificación local · 9 de noviembre de 2026 (America/Lima)
+# Verificación local · 10 de noviembre de 2026 (America/Lima)
 
-## Bloque 2: evidencia vigente
+## Bloque 3: evidencia vigente
+
+El [informe del Bloque 3](BLOQUE-3-COMPLEMENTOS.md) documenta las funciones nuevas, sus fórmulas y la verificación local: 83 pruebas .NET y 367 comprobaciones en Chrome (207 del flujo existente y 160 de complementos), todas correctas. Se comprobaron escritorio, tablet y móvil, migración sin pérdida de registros, aislamiento de notificaciones y reinicio transaccional por sesión. No se publicó ni desplegó este bloque.
+
+## Bloque 2: evidencia histórica
 
 El [informe del Bloque 2](BLOQUE-2-FLUJO-CONVALIDACION.md) documenta la verificación actual: compilación Release sin advertencias, 51 pruebas .NET correctas y 207 comprobaciones en Chrome, con capturas de los cinco perfiles en escritorio y móvil. Incluye migraciones sobre datos anteriores, persistencia, flujo completo, aprobación parcial y aislamiento de sesiones. No se desplegó en Render ni se ejecutó GitHub Actions.
 

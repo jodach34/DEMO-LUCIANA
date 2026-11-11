@@ -127,7 +127,7 @@ public class WebTests
         Assert.Equal(EstadoSolicitud.Finalizada, solicitud.Estado);
         Assert.Equal(13, solicitud.Historial.Count);
         Assert.Single(await db.Registros.IgnoreQueryFilters().Where(r=>r.AsignaturaSolicitud.SolicitudId==solicitud.Id).ToListAsync());
-        Assert.Equal(2,await db.Notificaciones.IgnoreQueryFilters().CountAsync(n=>n.SolicitudId==solicitud.Id));
+        Assert.Equal(2,await db.Notificaciones.IgnoreQueryFilters().CountAsync(n=>n.SolicitudId==solicitud.Id && n.Tipo == AccionSolicitud.Notificar));
     }
 
     [Fact]

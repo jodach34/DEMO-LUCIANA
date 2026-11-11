@@ -24,6 +24,13 @@
             <span>Demo académica · Datos ficticios · Sin validez administrativa</span>
         </footer>
     </div>
+    <div class="modal fade" id="reiniciarDemo" tabindex="-1" aria-labelledby="tituloReinicio" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><form asp-controller="Complementos" asp-action="Reiniciar" method="post">
+            <div class="modal-header"><h2 class="modal-title fs-5" id="tituloReinicio">¿Reiniciar demostración?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+            <div class="modal-body"><p>Se reemplazarán los expedientes y avisos de tu sesión actual por los seis ejemplos iniciales. Se perderán tus cambios de demostración.</p><p>El catálogo y los datos de otros visitantes se conservan.</p><div class="form-check"><input class="form-check-input" id="confirmarReinicio" name="confirmar" value="true" type="checkbox" required /><label class="form-check-label" for="confirmarReinicio">Confirmo que quiero reiniciar mi sesión de demostración.</label></div></div>
+            <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" type="submit">Reiniciar demostración</button></div>
+        </form></div></div>
+    </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

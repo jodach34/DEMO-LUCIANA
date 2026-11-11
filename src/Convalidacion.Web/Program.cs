@@ -42,6 +42,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(sqlite.
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<PerfilDemoService>();
 builder.Services.AddScoped<SolicitudService>();
+builder.Services.AddScoped<ComplementosService>();
+builder.Services.AddScoped<NotificacionService>();
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Home/Error");

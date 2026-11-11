@@ -37,7 +37,7 @@ No se necesitan credenciales dentro de la aplicación. La conexión GitHub–Ren
 1. En **Events**, espera un despliegue finalizado correctamente y revisa que corresponda al commit actual de `main`.
 2. En los logs, confirma la aplicación de `InitialCreate` y `IsolateDemoSessions` en un disco vacío, seguida de `Now listening on: http://0.0.0.0:<PORT>`.
 3. Abre la URL asignada por Render y luego `/health`; debe responder HTTP 200 y `{"status":"ok"}`.
-4. Recorre registro → Secretaría → Comisión → aprobación con datos ficticios. Comprueba filtros e historial.
+4. Recorre Estudiante → Oficina de Admisión → Director del Departamento Académico → Decano → Registros Académicos con datos ficticios. Comprueba subsanación, dictamen, resolución, finalización e historial; consulta también los complementos del Bloque 3. Estos son pasos de una publicación futura, sujeta a autorización.
 5. Abre una ventana privada o un navegador distinto. Debe tener sus propios ejemplos, sin mostrar las solicitudes o comentarios del primer navegador. Copiar la URL de un expediente ajeno debe devolver HTTP 404.
 6. Tras un reinicio o suspensión, comprueba que la aplicación vuelva a funcionar y prepare una sesión nueva. La pérdida de datos y sesiones es esperada en esta demo efímera.
 7. Solo comunica una URL como desplegada después de estas comprobaciones. Un archivo `render.yaml` o una construcción correcta en GitHub no equivalen a un despliegue Render.

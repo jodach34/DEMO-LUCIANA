@@ -23,6 +23,15 @@ window.addEventListener('pageshow', () => {
 // El perfil cambia la perspectiva de la sesión y abre su panel; no autentica al usuario.
 document.querySelector('#selectorPerfil select')?.addEventListener('change', event => event.target.form.requestSubmit());
 
+document.querySelector('#calculadora #AsignaturaId')?.addEventListener('change', event => {
+    document.querySelector('#creditosDestino').textContent = event.target.selectedOptions[0]?.dataset.creditos || 'Selecciona una asignatura';
+});
+// Cierra el menú móvil antes de mostrar la confirmación, sin dejar dos fondos superpuestos.
+document.querySelector('.sidebar-reset')?.addEventListener('click', () => {
+    const menu = document.querySelector('#menuLateral');
+    if (menu.classList.contains('show')) bootstrap.Offcanvas.getInstance(menu)?.hide();
+});
+
 const courseContainer = document.querySelector('#cursosSolicitud');
 const addCourse = document.querySelector('#agregarCurso');
 if (courseContainer && addCourse) {

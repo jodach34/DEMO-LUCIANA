@@ -1,0 +1,22 @@
+@model NotificacionesViewModel
+@inject Convalidacion.Web.Services.PerfilDemoService Perfiles
+@{ ViewData["Title"] = "Centro de notificaciones"; }
+<div class="page-heading"><div><h1>Centro de notificaciones</h1><p>@Perfiles.Actual.Texto() · <strong data-unread>@Model.SinLeer</strong> sin leer · Solo tu sesión de demostración.</p></div></div>
+<section class="panel">
+    <nav class="d-flex gap-3 mb-3" aria-label="Filtrar notificaciones"><a asp-action="Index" aria-current="@(!Model.SoloSinLeer ? "page" : null)">Todas</a><a asp-action="Index" asp-route-soloSinLeer="true" aria-current="@(Model.SoloSinLeer ? "page" : null)">Sin leer</a></nav>
+    @if(Model.Avisos.Count == 0){<p>No hay notificaciones para este filtro.</p>}
+    <div class="notification-history">
+    @foreach(var aviso in Model.Avisos)
+    {
+        <article class="notification-item @(aviso.LeidaUtc is null ? "unread" : "")" data-notification="@aviso.Id">
+            <div><strong>@aviso.Tipo.Texto()</strong><span class="status ms-2">@(aviso.LeidaUtc is null ? "Sin leer" : "Leída")</span><p>@aviso.Mensaje</p><p><small>@aviso.FechaUtc.HoraPeru() · Destinatario: @aviso.Destinatario.Texto()</small></p><a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@aviso.SolicitudId">Ver expediente @aviso.Solicitud.Codigo</a></div>
+            @if(aviso.LeidaUtc is null){<form method="post" asp-action="Leer"><input type="hidden" name="id" value="@aviso.Id" /><button class="btn btn-outline-primary btn-sm" type="submit">Marcar como leída</button></form>}
+        </article>
+    }
+    </div>
+    <nav class="d-flex gap-3 mt-3" aria-label="Páginas de notificaciones">
+        @if(Model.Pagina > 1){<a asp-action="Index" asp-route-pagina="@(Model.Pagina - 1)" asp-route-soloSinLeer="@Model.SoloSinLeer">Anterior</a>}
+        <span>Página @Model.Pagina de @Model.Paginas</span>
+        @if(Model.Pagina < Model.Paginas){<a asp-action="Index" asp-route-pagina="@(Model.Pagina + 1)" asp-route-soloSinLeer="@Model.SoloSinLeer">Siguiente</a>}
+    </nav>
+</section>

@@ -40,7 +40,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
         modelBuilder.Entity<ResolucionDecanal>().HasOne(r => r.Solicitud).WithOne(s => s.Resolucion).HasForeignKey<ResolucionDecanal>(r => r.SolicitudId);
         modelBuilder.Entity<ResolucionDecanal>().HasOne(r => r.DictamenAcademico).WithMany().OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<NotificacionExpediente>().HasQueryFilter(n => n.Solicitud.AmbitoDemo == AmbitoActual);
-        modelBuilder.Entity<NotificacionExpediente>().HasIndex(n => new { n.SolicitudId, n.Destinatario }).IsUnique();
+        modelBuilder.Entity<NotificacionExpediente>().HasIndex(n => new { n.SolicitudId, n.Destinatario, n.EventoId }).IsUnique();
         modelBuilder.Entity<RegistroAcademico>().HasQueryFilter(r => r.AsignaturaSolicitud.Solicitud.AmbitoDemo == AmbitoActual);
         modelBuilder.Entity<RegistroAcademico>().HasOne(r => r.AsignaturaSolicitud).WithOne(c => c.Registro).HasForeignKey<RegistroAcademico>(r => r.AsignaturaSolicitudId);
         modelBuilder.Entity<RegistroAcademico>().HasOne(r => r.ResolucionDecanal).WithMany().OnDelete(DeleteBehavior.Restrict);

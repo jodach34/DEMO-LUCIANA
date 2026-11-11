@@ -1,5 +1,7 @@
 # Bloque 2: proceso de convalidación USMP
 
+> Informe histórico del Bloque 2. Los pendientes y el estado de publicación indicados aquí corresponden a su cierre. La inspección del 10/11/2026 confirmó su integración en `origin/main` (`cd6c2eb`). Consulta el [Bloque 3](BLOQUE-3-COMPLEMENTOS.md) para las funcionalidades y la verificación actuales.
+
 Implementación local para revisión. Conserva el diseño del Bloque 1 y no incluye los módulos reservados para el Bloque 3.
 
 ## Cambios realizados
